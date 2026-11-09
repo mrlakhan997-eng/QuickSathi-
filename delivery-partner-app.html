@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
-            --primary: #2ed573; /* Partner ke liye green theme */
+            --primary: #2ed573;
             --danger: #ff4757;
             --secondary: #2f3640;
             --bg-color: #f5f6fa;
@@ -58,7 +58,7 @@
             flex: 1;
             padding: 10px;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             color: #718093;
@@ -134,16 +134,10 @@
             padding: 15px;
             margin-bottom: 15px;
             display: none;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(46, 213, 115, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0); }
         }
         .map-box {
             width: 100%;
-            height: 200px;
+            height: 180px;
             border-radius: 8px;
             margin-top: 10px;
             border: 1px solid #ced6e0;
@@ -153,211 +147,4 @@
             background: #e8f8f5;
             border: 1px solid #2ecc71;
             padding: 15px;
-            border-radius: 10px;
-            display: none;
-            margin-top: 15px;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <header>
-        <h1>🏍️ Quick Sathi Partner</h1>
-        <p>Delivery Executive Panel</p>
-    </header>
-
-    <div class="nav-tabs">
-        <div class="nav-tab active" onclick="switchTab('dashboard', this)">Dashboard</div>
-        <div class="nav-tab" onclick="switchTab('register', this)">Driver Registration</div>
-    </div>
-
-    <!-- DASHBOARD TAB -->
-    <div id="dashboardSection" class="section-content active">
-        
-        <!-- Duty Status Bar -->
-        <div class="duty-bar">
-            <span style="font-weight: 600; font-size: 14px;">Duty Status:</span>
-            <div id="dutyStatusBtn" class="status-badge" onclick="toggleDuty()">OFFLINE 🔴</div>
-        </div>
-
-        <!-- Waiting Message -->
-        <div id="waitingMsg" style="text-align: center; color: #718093; padding: 30px 0; font-size: 14px;">
-            Aap offline hain. Duty ON karein naye orders paane ke liye! 🛵
-        </div>
-
-        <!-- Incoming Order Popup -->
-        <div id="orderPopup" class="order-popup">
-            <h3 style="color: var(--secondary); margin-bottom: 8px;">🔔 New Order Received!</h3>
-            <p><b>Customer:</b> <span id="custName">Rahul Verma</span></p>
-            <p><b>Pickup:</b> <span id="pickupLocText">Vijay Nagar, Indore</span></p>
-            <p><b>Drop:</b> <span id="dropLocText">Rajwada, Indore</span></p>
-            <p style="margin-top: 6px; color: var(--primary); font-weight: bold;">Earning: ₹ 80</p>
-            <button class="btn-main" style="background: var(--primary); margin-top: 10px;" onclick="acceptOrder()">Accept Order 🚀</button>
-        </div>
-
-        <!-- Active Order & Live Map View -->
-        <div id="activeOrderBox" class="active-order-box">
-            <h3 style="color: #27ae60; margin-bottom: 5px;">📦 Active Delivery</h3>
-            <p><b>Customer:</b> <span id="activeCust">Rahul Verma</span></p>
-            <p><b>Destination Drop Location:</b></p>
-            <div id="liveMap" class="map-box"></div>
             
-            <div class="input-group" style="margin-top: 15px;">
-                <label>Customer ka OTP enter karein (Delivery complete karne ke liye):</label>
-                <input type="text" id="enterOtp" placeholder="4-digit OTP">
-            </div>
-            <button class="btn-main" style="background: #27ae60;" onclick="completeDelivery()">Verify & Complete Delivery ✅</button>
-        </div>
-
-    </div>
-
-    <!-- REGISTRATION TAB -->
-    <div id="registerSection" class="section-content">
-        <div style="font-size: 13px; color: #57606f; margin-bottom: 12px;">
-            Kripya apne asli documents upload karein verification ke liye.
-        </div>
-        
-        <div class="input-group">
-            <label>Pura Naam (As per Aadhaar)</label>
-            <input type="text" id="driverName" placeholder="Aapka naam">
-        </div>
-        <div class="input-group">
-            <label>Mobile Number (OTP Verification)</label>
-            <input type="tel" id="driverPhone" placeholder="10-digit mobile number">
-        </div>
-        <div class="input-group">
-            <label>Aadhaar Card Number</label>
-            <input type="text" id="aadhaarNo" placeholder="12-digit Aadhaar number">
-        </div>
-        <div class="input-group">
-            <label>PAN Card Number</label>
-            <input type="text" id="panNo" placeholder="PAN card number">
-        </div>
-        <div class="input-group">
-            <label>Driving Licence Number</label>
-            <input type="text" id="dlNo" placeholder="DL number">
-        </div>
-        <div class="input-group">
-            <label>Bike RC Card Number</label>
-            <input type="text" id="rcNo" placeholder="Vehicle RC number">
-        </div>
-        <div class="input-group">
-            <label>Helmet Photo (Upload / Capture)</label>
-            <input type="file" accept="image/*">
-        </div>
-        <div class="input-group">
-            <label>Live Selfie (Face Verification)</label>
-            <input type="file" accept="image/*" capture="user">
-        </div>
-        <div class="input-group">
-            <label>Bank Account Number / UPI ID</label>
-            <input type="text" id="bankDetails" placeholder="A/C No & IFSC or UPI ID">
-        </div>
-
-        <button class="btn-main" onclick="submitRegistration()">Submit for Verification 🚀</button>
-    </div>
-
-</div>
-
-<!-- Leaflet JS for Live Map -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    let isOnline = false;
-    let deliveryMap;
-    let dropMarker;
-
-    function switchTab(tabName, element) {
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-
-        element.classList.add('active');
-        if(tabName === 'dashboard') {
-            document.getElementById('dashboardSection').classList.add('active');
-            if(deliveryMap) deliveryMap.invalidateSize();
-        } else {
-            document.getElementById('registerSection').classList.add('active');
-        }
-    }
-
-    // Duty Toggle Function
-    function toggleDuty() {
-        isOnline = !isOnline;
-        const btn = document.getElementById('dutyStatusBtn');
-        const waiting = document.getElementById('waitingMsg');
-
-        if(isOnline) {
-            btn.innerText = "ONLINE 🟢";
-            btn.classList.add('online');
-            waiting.innerText = "Orders ki talash ki ja rahi hai... 🔍";
-            
-            // Simulate incoming order popup after 3 seconds when online
-            setTimeout(() => {
-                if(isOnline) {
-                    document.getElementById('orderPopup').style.display = 'block';
-                    waiting.style.display = 'none';
-                }
-            }, 3000);
-
-        } else {
-            btn.innerText = "OFFLINE 🔴";
-            btn.classList.remove('online');
-            waiting.innerText = "Aap offline hain. Duty ON karein naye orders paane ke liye! 🛵";
-            waiting.style.display = 'block';
-            document.getElementById('orderPopup').style.display = 'none';
-        }
-    }
-
-    // Accept Order & Show Live Map for Drop Location
-    function acceptOrder() {
-        document.getElementById('orderPopup').style.display = 'none';
-        document.getElementById('activeOrderBox').style.display = 'block';
-        document.getElementById('liveMap').style.display = 'block';
-
-        // Initialize Live Map showing Drop Location (Rajwada Indore coordinates as example)
-        const dropLat = 22.7179;
-        const dropLon = 75.8533;
-
-        if(!deliveryMap) {
-            deliveryMap = L.map('liveMap').setView([dropLat, dropLon], 15);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
-            }).addTo(deliveryMap);
-            dropMarker = L.marker([dropLat, dropLon]).addTo(deliveryMap)
-                .bindPopup('<b>Drop Location:</b> Rajwada, Indore').openPopup();
-        } else {
-            deliveryMap.invalidateSize();
-        }
-
-        alert('Order Accepted! Live Map par drop location dekhein.');
-    }
-
-    // Complete Delivery
-    function completeDelivery() {
-        const otp = document.getElementById('enterOtp').value;
-        if(!otp) {
-            alert('Kripya customer se pooch kar OTP enter karein!');
-            return;
-        }
-        alert('🎉 Delivery Successfully Completed! Earning aapke account mein add ho gayi hai.');
-        document.getElementById('activeOrderBox').style.display = 'none';
-        toggleDuty(); // Go offline or reset
-    }
-
-    // Submit Registration
-    function submitRegistration() {
-        const name = document.getElementById('driverName').value;
-        const phone = document.getElementById('driverPhone').value;
-        const aadhaar = document.getElementById('aadhaarNo').value;
-
-        if(!name || !phone || !aadhaar) {
-            alert('Kripya zaroori details (Naam, Mobile, Aadhaar) bharein!');
-            return;
-        }
-        alert('✅ Aapka registration form safalpurvak submit ho gaya hai! Verification ke baad account activate ho jayega.');
-    }
-</script>
-
-</body>
-</html>
