@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Sathi - Live Map Delivery App</title>
-    <!-- Leaflet CSS for Live Map -->
+    <title>Quick Sathi - Delivery App</title>
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --primary: #ff4757;
-            --secondary: #2f3640;
             --bg-color: #f5f6fa;
             --card-bg: #ffffff;
             --text-color: #333;
@@ -64,7 +63,6 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.3s;
             color: #718093;
         }
         .nav-tab.active {
@@ -96,10 +94,6 @@
             border-radius: 8px;
             font-size: 14px;
             outline: none;
-            transition: border 0.3s;
-        }
-        input:focus, select:focus {
-            border-color: var(--primary);
         }
         .gps-btn {
             background: #2ed573;
@@ -112,7 +106,6 @@
             margin-top: 5px;
             display: inline-block;
         }
-        /* Suggestions Dropdown */
         .suggestions-list {
             position: absolute;
             top: 100%;
@@ -120,11 +113,10 @@
             right: 0;
             background: white;
             border: 1px solid #dcdde1;
-            border-top: none;
             border-radius: 0 0 8px 8px;
             max-height: 150px;
             overflow-y: auto;
-            z-index: 100;
+            z-index: 1000;
             display: none;
         }
         .suggestion-item {
@@ -136,14 +128,13 @@
         .suggestion-item:hover {
             background-color: #f8f9fa;
         }
-        /* Asli Live Map Box */
-        .map-container {
+        /* Live Map Container */
+        .map-box {
             width: 100%;
-            height: 140px;
+            height: 150px;
             border-radius: 8px;
             margin-top: 6px;
             border: 1px solid #ced6e0;
-            z-index: 1;
         }
         .fare-box {
             background: #f1f2f6;
@@ -172,10 +163,6 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            transition: opacity 0.3s;
-        }
-        .btn-main:hover {
-            opacity: 0.9;
         }
         .profile-card {
             background: #f8f9fa;
@@ -209,30 +196,27 @@
         <p>Aapka Apna Smart Live Delivery Partner</p>
     </header>
 
-    <!-- Navigation Tabs -->
     <div class="nav-tabs">
         <div class="nav-tab active" onclick="switchTab('book', this)">Book Parcel</div>
         <div class="nav-tab" onclick="switchTab('profile', this)">My Profile</div>
     </div>
 
-    <!-- TAB 1: BOOK PARCEL -->
+    <!-- BOOK PARCEL TAB -->
     <div id="bookSection" class="section-content active">
         
-        <!-- Pickup Location -->
         <div class="input-group">
             <label>📍 Pickup Location (Kahan se lana hai?)</label>
             <input type="text" id="pickupLoc" placeholder="City ya area ka naam likhein..." oninput="showSuggestions(this.value, 'pickup')" autocomplete="off">
             <div id="pickupSuggestions" class="suggestions-list"></div>
             <button class="gps-btn" onclick="useCurrentLocation()">📍 Use My Current Location</button>
-            <div id="pickupMap" class="map-container"></div>
+            <div id="pickupMap" class="map-box"></div>
         </div>
 
-        <!-- Drop Location -->
         <div class="input-group">
             <label>🎯 Drop Location (Kahan bhejna hai?)</label>
             <input type="text" id="dropLoc" placeholder="Manzil city ya area likhein..." oninput="showSuggestions(this.value, 'drop')" autocomplete="off">
             <div id="dropSuggestions" class="suggestions-list"></div>
-            <div id="dropMap" class="map-container"></div>
+            <div id="dropMap" class="map-box"></div>
         </div>
 
         <div class="input-group">
@@ -251,7 +235,6 @@
 
         <button class="btn-main" onclick="bookParcel()">Book Parcel & Get Secure OTP 🚀</button>
 
-        <!-- Secure Delivery OTP Box -->
         <div id="otpBox" class="otp-display">
             <span style="font-size: 13px; font-weight: 600; color: #333;">🔒 Delivery Security OTP:</span>
             <h3 id="generatedOtp">----</h3>
@@ -259,7 +242,7 @@
         </div>
     </div>
 
-    <!-- TAB 2: PROFILE -->
+    <!-- PROFILE TAB -->
     <div id="profileSection" class="section-content">
         <div class="profile-card">
             <h3 style="margin-bottom: 10px; color: #2f3640;">👤 User Profile</h3>
@@ -277,159 +260,20 @@
 
 </div>
 
-<!-- Leaflet JS for Live Map -->
+<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Initialize Maps on load (Default center set to Indore / India)
-    let pickupMap, dropMap;
-    let pickupMarker, dropMarker;
+    let pMap, dMap;
+    let pMarker, dMarker;
 
-    window.onload = function() {
-        // Default coordinates (Indore center)
+    // Initialize Maps immediately when page loads
+    document.addEventListener("DOMContentLoaded", function() {
         const defaultLat = 22.7196;
         const defaultLon = 75.8577;
 
-        // Pickup Map
-        pickupMap = L.map('pickupMap').setView([defaultLat, defaultLon], 13);
+        // Pickup Map Setup
+        pMap = L.map('pickupMap').setView([defaultLat, defaultLon], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
-        }).addTo(pickupMap);
-        pickupMarker = L.marker([defaultLat, defaultLon]).addTo(pickupMap);
-
-        // Drop Map
-        dropMap = L.map('dropMap').setView([defaultLat, defaultLon], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(dropMap);
-        dropMarker = L.marker([defaultLat, defaultLon]).addTo(dropMap);
-    };
-
-    // Sample locations data with coordinates for live map panning
-    const locationsData = [
-        { name: "Indore - Vijay Nagar", lat: 22.7480, lon: 75.8936 },
-        { name: "Indore - Rajwada", lat: 22.7179, lon: 75.8533 },
-        { name: "Indore - Bhanwarkuan", lat: 22.6881, lon: 75.8675 },
-        { name: "Bhopal - MP Nagar", lat: 23.2332, lon: 77.4340 },
-        { name: "Khargone - Bus Stand", lat: 21.8170, lon: 75.6139 },
-        { name: "Dhamnod - Main Market", lat: 22.2227, lon: 75.4746 },
-        { name: "Ujjain - Freeganj", lat: 23.1793, lon: 75.7849 }
-    ];
-
-    // Tab Switching Logic
-    function switchTab(tabName, element) {
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-
-        element.classList.add('active');
-        if(tabName === 'book') {
-            document.getElementById('bookSection').classList.add('active');
-            // Fix map rendering bug when switching tabs
-            setTimeout(() => {
-                pickupMap.invalidateSize();
-                dropMap.invalidateSize();
-            }, 200);
-        } else {
-            document.getElementById('profileSection').classList.add('active');
-        }
-    }
-
-    // Auto-suggest search bar logic
-    function showSuggestions(val, type) {
-        const listId = type === 'pickup' ? 'pickupSuggestions' : 'dropSuggestions';
-        const listDiv = document.getElementById(listId);
-        
-        if(!val) {
-            listDiv.style.display = 'none';
-            return;
-        }
-
-        const filtered = locationsData.filter(item => item.name.toLowerCase().includes(val.toLowerCase()));
-        
-        if(filtered.length > 0) {
-            let html = '';
-            filtered.forEach(loc => {
-                html += `<div class="suggestion-item" onclick="selectLocation('${loc.name}', ${loc.lat}, ${loc.lon}, '${type}')">${loc.name}</div>`;
-            });
-            listDiv.innerHTML = html;
-            listDiv.style.display = 'block';
-        } else {
-            listDiv.style.display = 'none';
-        }
-    }
-
-    function selectLocation(name, lat, lon, type) {
-        if(type === 'pickup') {
-            document.getElementById('pickupLoc').value = name;
-            document.getElementById('pickupSuggestions').style.display = 'none';
-            pickupMap.setView([lat, lon], 15);
-            pickupMarker.setLatLng([lat, lon]);
-        } else {
-            document.getElementById('dropLoc').value = name;
-            document.getElementById('dropSuggestions').style.display = 'none';
-            dropMap.setView([lat, lon], 15);
-            dropMarker.setLatLng([lat, lon]);
-        }
-    }
-
-    // Use Current GPS Location
-    function useCurrentLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                const locText = `Current GPS Location (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
-                
-                document.getElementById('pickupLoc').value = locText;
-                pickupMap.setView([lat, lon], 16);
-                pickupMarker.setLatLng([lat, lon]);
-                
-                alert('Live GPS Location map par set ho gayi hai!');
-            }, () => {
-                alert('Location access denied or unavailable.');
-            });
-        } else {
-            alert('Geolocation is not supported by your browser.');
-        }
-    }
-
-    // Fare calculation
-    function calculateFare() {
-        const size = document.getElementById('parcelSize').value;
-        let price = 50;
-        if(size === 'medium') price = 80;
-        if(size === 'large') price = 130;
-        document.getElementById('totalFare').innerText = '₹ ' + price;
-    }
-
-    // Booking trigger with Secure OTP generation
-    function bookParcel() {
-        const pickup = document.getElementById('pickupLoc').value;
-        const drop = document.getElementById('dropLoc').value;
-        if(!pickup || !drop) {
-            alert('Kripya Pickup aur Drop dono locations select karein!');
-            return;
-        }
-
-        const randomOtp = Math.floor(1000 + Math.random() * 9000);
-        document.getElementById('generatedOtp').innerText = randomOtp;
-        document.getElementById('otpBox').style.display = 'block';
-
-        alert('🎉 Booking Successful! Delivery verification ke liye OTP generate ho gaya hai.');
-    }
-
-    // Save Profile
-    function saveProfile() {
-        const name = document.getElementById('userName').value;
-        const phone = document.getElementById('userPhone').value;
-        if(!name || !phone) {
-            alert('Kripya Naam aur Mobile Number zaroor bharein!');
-            return;
-        }
-        alert('✅ Profile details safely save ho gayi hain!');
-    }
-</script>
-
-</body>
-</html>
+            
