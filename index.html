@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Sathi - Customer App</title>
+    <title>Quick Sathi - Fast Parcel Delivery</title>
     <style>
+        :root {
+            --primary: #ff4757;
+            --secondary: #2f3640;
+            --bg-color: #f5f6fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
         * {
             box-sizing: border-box;
             margin: 0;
@@ -12,34 +19,62 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         body {
-            background-color: #f5f6fa;
-            color: #333;
-            padding: 15px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 10px;
         }
         .container {
             max-width: 480px;
             margin: 0 auto;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
+            padding-bottom: 20px;
         }
         header {
-            background: #ff4757;
+            background: var(--primary);
             color: white;
             padding: 20px;
             text-align: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
         }
         header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 22px;
+            margin-bottom: 4px;
         }
         header p {
-            font-size: 14px;
+            font-size: 13px;
             opacity: 0.9;
         }
-        .form-section {
-            padding: 20px;
+        .nav-tabs {
+            display: flex;
+            background: #f1f2f6;
+            margin: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .nav-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            color: #718093;
+        }
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        .section-content {
+            display: none;
+            padding: 0 20px;
+        }
+        .section-content.active {
+            display: block;
         }
         .input-group {
             margin-bottom: 15px;
@@ -48,10 +83,10 @@
             display: block;
             font-weight: 600;
             margin-bottom: 5px;
-            font-size: 14px;
-            color: #555;
+            font-size: 13px;
+            color: #4b6584;
         }
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid #dcdde1;
@@ -60,62 +95,71 @@
             outline: none;
             transition: border 0.3s;
         }
-        input:focus, select:focus {
-            border-color: #ff4757;
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--primary);
         }
-        .services-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .service-card {
-            border: 2px solid #dcdde1;
+        .permission-box {
+            background: #f8f9fa;
+            border: 1px dashed #ced6e0;
+            padding: 12px;
             border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #57606f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .service-card.active {
-            border-color: #ff4757;
-            background-color: #ffe4e6;
-            color: #ff4757;
+        .perm-btn {
+            background: #747d8c;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .perm-btn.granted {
+            background: #2ed573;
         }
         .fare-box {
             background: #f1f2f6;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .fare-box span {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
-            color: #2f3640;
         }
         #totalFare {
-            color: #ff4757;
-            font-size: 20px;
+            color: var(--primary);
+            font-size: 18px;
         }
-        .btn-book {
+        .btn-main {
             width: 100%;
-            background: #ff4757;
+            background: var(--primary);
             color: white;
             border: none;
             padding: 14px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.3s;
         }
-        .btn-book:hover {
-            background: #ff6b81;
+        .btn-main:hover {
+            opacity: 0.9;
+        }
+        .profile-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
         }
     </style>
 </head>
@@ -123,100 +167,143 @@
 
 <div class="container">
     <header>
-        <h1>Quick Sathi</h1>
-        <p>Aapka Apna Local Delivery & Emergency Partner</p>
+        <h1>📦 Quick Sathi</h1>
+        <p>Aapka Apna Trusted Parcel Delivery Partner</p>
     </header>
 
-    <div class="form-section">
-        <!-- Service Type Selection -->
-        <div class="input-group">
-            <label>Aapko kya sahayata chahiye?</label>
-            <div class="services-grid">
-                <div class="service-card active" onclick="selectService('parcel', this)">📦 Parcel / Delivery</div>
-                <div class="service-card" onclick="selectService('petrol', this)">⛽ Petrol Delivery</div>
-                <div class="service-card" onclick="selectService('mechanic', this)">🔧 Puncture / Mechanic</div>
-                <div class="service-card" onclick="selectService('other', this)">🛍️ Custom Task</div>
-            </div>
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchTab('book', this)">Book Parcel</div>
+        <div class="nav-tab" onclick="switchTab('profile', this)">My Profile</div>
+    </div>
+
+    <!-- TAB 1: BOOK PARCEL -->
+    <div id="bookSection" class="section-content active">
+        
+        <!-- Permissions Check Section -->
+        <div class="permission-box">
+            <span>📍 Location Access</span>
+            <button id="locBtn" class="perm-btn" onclick="requestPermission('loc')">Enable</button>
+        </div>
+        <div class="permission-box">
+            <span>📷 Camera & 🎤 Voice Access</span>
+            <button id="camBtn" class="perm-btn" onclick="requestPermission('cam')">Enable</button>
         </div>
 
-        <!-- Pickup Location -->
         <div class="input-group">
-            <label>📍 Pickup Location (Kahan se?)</label>
-            <input type="text" id="pickup" placeholder="Apna current address ya landmark dalein">
+            <label>📍 Pickup Location (Kahan se lana hai?)</label>
+            <input type="text" id="pickupLoc" placeholder="Apna pura pata ya landmark dalein">
         </div>
 
-        <!-- Drop Location -->
-        <div class="input-group" id="dropGroup">
+        <div class="input-group">
             <label>🎯 Drop Location (Kahan bhejna hai?)</label>
-            <input type="text" id="drop" placeholder="Manzil ka pata dalein">
+            <input type="text" id="dropLoc" placeholder="Manzil ka pata dalein">
         </div>
 
-        <!-- Parcel Size / Extra Details -->
-        <div class="input-group" id="parcelSizeGroup">
-            <label>📏 Parcel ka Size / Vajan</label>
+        <div class="input-group">
+            <label>📏 Parcel ka Size & Details</label>
             <select id="parcelSize" onchange="calculateFare()">
-                <option value="small">Chhota (Documents, Keys - 0 to 2 kg)</option>
-                <option value="medium">Medium (Box, Clothes - 2 to 5 kg)</option>
-                <option value="large">Bada (Heavy bag / Large box - 5+ kg)</option>
+                <option value="small">Small (Documents, Keys - upto 2kg)</option>
+                <option value="medium">Medium (Box, Clothes - 2 to 5kg)</option>
+                <option value="large">Large (Heavy Item / Big Box - 5kg+)</option>
             </select>
         </div>
 
-        <!-- Estimated Fare Show Box -->
-        <div class="fare-box">
-            <span>Estimated Kiraya:</span>
-            <span id="totalFare">₹ 49</span>
+        <div class="input-group">
+            <label>💬 Kuch khas baat (Optional Voice/Text note)</label>
+            <textarea id="note" rows="2" placeholder="Jaise: Saman nazuk hai, ya raste mein call karein..."></textarea>
         </div>
 
-        <!-- Book Button -->
-        <button class="btn-book" onclick="bookService()">Book Now 🚀</button>
+        <div class="fare-box">
+            <span>Estimated Kiraya:</span>
+            <span id="totalFare">₹ 50</span>
+        </div>
+
+        <button class="btn-main" onclick="bookParcel()">Book Parcel Now 🚀</button>
     </div>
+
+    <!-- TAB 2: PROFILE -->
+    <div id="profileSection" class="section-content">
+        <div class="profile-card">
+            <h3 style="margin-bottom: 10px; color: #2f3640;">👤 User Information</h3>
+            <div class="input-group">
+                <label>Aapka Naam</label>
+                <input type="text" id="userName" placeholder="Apna pura naam likhein">
+            </div>
+            <div class="input-group">
+                <label>Mobile Number</label>
+                <input type="tel" id="userPhone" placeholder="10-digit mobile number">
+            </div>
+            <div class="input-group">
+                <label>Default Address</label>
+                <input type="text" id="userAddress" placeholder="Ghar ya office ka pata">
+            </div>
+            <button class="btn-main" onclick="saveProfile()">Save Profile 💾</button>
+        </div>
+    </div>
+
 </div>
 
 <script>
-    let currentService = 'parcel';
+    // Tab Switching Logic
+    function switchTab(tabName, element) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
 
-    function selectService(service, element) {
-        currentService = service;
-        
-        // Remove active class from all cards
-        document.querySelectorAll('.service-card').forEach(card => card.classList.remove('active'));
-        // Add active to clicked card
         element.classList.add('active');
-
-        // Hide/Show fields based on service
-        const dropGroup = document.getElementById('dropGroup');
-        const parcelSizeGroup = document.getElementById('parcelSizeGroup');
-
-        if (service === 'petrol' || service === 'mechanic') {
-            dropGroup.style.display = 'none';
-            parcelSizeGroup.style.display = 'none';
-            document.getElementById('totalFare').innerText = service === 'petrol' ? '₹ 79 + Fuel Cost' : '₹ 99';
+        if(tabName === 'book') {
+            document.getElementById('bookSection').classList.add('class', '').classList.add('active');
         } else {
-            dropGroup.style.display = 'block';
-            parcelSizeGroup.style.display = 'block';
-            calculateFare();
+            document.getElementById('profileSection').classList.add('active');
         }
     }
 
-    function calculateFare() {
-        if(currentService !== 'parcel' && currentService !== 'other') return;
-        
-        const size = document.getElementById('parcelSize').value;
-        let basePrice = 40;
-        
-        if (size === 'medium') basePrice = 70;
-        if (size === 'large') basePrice = 110;
-
-        document.getElementById('totalFare').innerText = '₹ ' + basePrice;
+    // Permission simulation
+    function requestPermission(type) {
+        if(type === 'loc') {
+            navigator.geolocation.getCurrentPosition((position) => {
+                document.getElementById('locBtn').innerText = 'Allowed ✓';
+                document.getElementById('locBtn').classList.add('granted');
+                alert('Location successfully fetched!');
+            }, () => {
+                alert('Location permission denied or failed.');
+            });
+        } else {
+            document.getElementById('camBtn').innerText = 'Allowed ✓';
+            document.getElementById('camBtn').classList.add('granted');
+            alert('Camera & Voice permissions granted!');
+        }
     }
 
-    function bookService() {
-        const pickup = document.getElementById('pickup').value;
-        if(!pickup) {
-            alert('Kripya pickup location darj karein!');
+    // Fare calculation
+    function calculateFare() {
+        const size = document.getElementById('parcelSize').value;
+        let price = 50;
+        if(size === 'medium') price = 80;
+        if(size === 'large') price = 130;
+        document.getElementById('totalFare').innerText = '₹ ' + price;
+    }
+
+    // Booking trigger
+    function bookParcel() {
+        const pickup = document.getElementById('pickupLoc').value;
+        const drop = document.getElementById('dropLoc').value;
+        if(!pickup || !drop) {
+            alert('Kripya Pickup aur Drop dono location bharein!');
             return;
         }
-        alert('Aapki booking safal rahi! Quick Sathi partner jald hi aapse sampark karega.');
+        alert('🎉 Aapki parcel booking ho gayi hai! Jaldi hi delivery partner aapse judege.');
+    }
+
+    // Save Profile
+    function saveProfile() {
+        const name = document.getElementById('userName').value;
+        const phone = document.getElementById('userPhone').value;
+        if(!name || !phone) {
+            alert('Kripya Naam aur Mobile Number zaroor bharein!');
+            return;
+        }
+        alert('✅ Profile details safely save ho gayi hain!');
     }
 </script>
 
