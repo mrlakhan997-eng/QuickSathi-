@@ -1,459 +1,224 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QUICK SAATHI — On-Demand Services</title>
-  
-  <!-- Leaflet OpenStreetMap CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: #f3f6f8; color: #172536; padding-bottom: 30px; }
-    
-    header { background: #153b55; color: white; padding: 16px; text-align: center; border-radius: 0 0 16px 16px; }
-    header h1 { font-size: 24px; margin-bottom: 4px; }
-    header p { font-size: 13px; opacity: 0.9; }
-    
-    .nav-bar { display: flex; background: #e7edf2; padding: 4px; margin: 12px auto; max-width: 600px; border-radius: 12px; }
-    .nav-btn { flex: 1; padding: 10px; text-align: center; background: transparent; border: none; font-weight: 700; color: #18364b; cursor: pointer; border-radius: 8px; }
-    .nav-btn.active { background: #16865b; color: white; }
-    
-    .container { max-width: 600px; margin: auto; padding: 0 12px; }
-    .card { background: white; padding: 16px; border-radius: 14px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .card h2, .card h3 { font-size: 18px; margin-bottom: 12px; color: #153b55; }
-    
-    label { display: block; font-weight: 600; font-size: 13px; margin: 10px 0 4px; }
-    input, select { width: 100%; padding: 11px; border: 1px solid #ccd6df; border-radius: 8px; font-size: 14px; outline: none; }
-    input:focus, select:focus { border-color: #16865b; }
-    
-    button.btn-main { width: 100%; padding: 12px; background: #16865b; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 12px; }
-    button.btn-secondary { background: #e8eef2; color: #18364b; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    
-    #map { height: 260px; width: 100%; border-radius: 12px; margin: 10px 0; border: 1px solid #ccd6df; }
-    
-    .fare-box { background: #f6faf8; padding: 12px; border-radius: 10px; margin-top: 10px; border: 1px dashed #16865b; }
-    .row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 14px; }
-    .price { font-size: 24px; font-weight: 800; color: #16865b; }
-    
-    .status-badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-    .bg-searching { background: #fff3cd; color: #856404; }
-    .bg-accepted { background: #d1ecf1; color: #0c5460; }
-    .bg-completed { background: #d4edda; color: #155724; }
-    
-    /* Camera Setup */
-    .camera-container { width: 100%; height: 200px; background: #222; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-top: 6px; }
-    video, canvas, img.preview { width: 100%; height: 100%; object-fit: cover; }
-    .verified-tag { color: #16865b; font-weight: bold; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sathi - Customer App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f5f6fa;
+            color: #333;
+            padding: 15px;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        header {
+            background: #ff4757;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .form-section {
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dcdde1;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #ff4757;
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .service-card {
+            border: 2px solid #dcdde1;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .service-card.active {
+            border-color: #ff4757;
+            background-color: #ffe4e6;
+            color: #ff4757;
+        }
+        .fare-box {
+            background: #f1f2f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .fare-box span {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2f3640;
+        }
+        #totalFare {
+            color: #ff4757;
+            font-size: 20px;
+        }
+        .btn-book {
+            width: 100%;
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-book:hover {
+            background: #ff6b81;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>QUICK SAATHI</h1>
-    <p>Indore's Trusted On-Demand Delivery & Assistance App</p>
-  </header>
+<div class="container">
+    <header>
+        <h1>Quick Sathi</h1>
+        <p>Aapka Apna Local Delivery & Emergency Partner</p>
+    </header>
 
-  <div class="container">
-    <!-- Top Mode Selector Navigation -->
-    <div class="nav-bar">
-      <button class="nav-btn active" id="tab-customer" onclick="switchView('customer')">Customer Mode</button>
-      <button class="nav-btn" id="tab-partner" onclick="switchView('partner')">Partner Mode</button>
-      <button class="nav-btn" id="tab-profile" onclick="switchView('profile')">Account / KYC</button>
-    </div>
-
-    <!-- Live Map View -->
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3>Live GPS Location (Indore)</h3>
-        <span class="verified-tag" id="map-status">📍 Tap map to set points</span>
-      </div>
-      <div id="map"></div>
-    </div>
-
-    <!-- CUSTOMER VIEW -->
-    <div id="view-customer">
-      <div class="card">
-        <h2>Book a Service</h2>
-        <label>Select Service Type</label>
-        <select id="service">
-          <option>Petrol Assistance</option>
-          <option>Parcel Delivery</option>
-          <option>Bike Repair Help</option>
-          <option>Goods Transport</option>
-        </select>
-
-        <label>Vehicle Required</label>
-        <select id="vehicle">
-          <option value="Bike">Bike (₹25 base + ₹8/km)</option>
-          <option value="3 Wheeler">3 Wheeler (₹50 base + ₹15/km)</option>
-          <option value="Tata Ace">Tata Ace (₹80 base + ₹22/km)</option>
-        </select>
-
-        <label>Pickup Location</label>
-        <input id="pickup" placeholder="Click on map or type pickup point" value="Vijay Nagar, Indore">
-
-        <label>Drop Location</label>
-        <input id="drop" placeholder="Click on map or type drop point" value="Palasia, Indore">
-
-        <label>Calculated Distance (KM)</label>
-        <input id="km" type="number" value="4.5" step="0.1" readonly>
-
-        <div class="fare-box">
-          <div class="row"><span>Estimated Fare</span><span class="price" id="fare-display">₹61</span></div>
-        </div>
-
-        <button class="btn-main" onclick="createBooking()">Request Quick Saathi</button>
-      </div>
-
-      <div class="card">
-        <h3>My Bookings</h3>
-        <div id="customer-history">No bookings yet.</div>
-      </div>
-    </div>
-
-    <!-- PARTNER VIEW -->
-    <div id="view-partner" style="display:none;">
-      <div class="card">
-        <div class="row">
-          <h2>Delivery Partner Duty</h2>
-          <button class="btn-main" id="duty-btn" style="width:auto; margin:0; padding:6px 14px;" onclick="toggleDuty()">Go Online</button>
-        </div>
-        <p style="font-size:12px; color:#666; margin-top:4px;">Duty Status: <b id="duty-status" style="color:red;">Offline</b></p>
-      </div>
-
-      <div class="card">
-        <h3>Available Job Requests</h3>
-        <div id="partner-requests">Go Online to view pending requests.</div>
-      </div>
-
-      <div class="card">
-        <h3>My Active & Completed Jobs</h3>
-        <div id="partner-jobs">No active jobs.</div>
-      </div>
-    </div>
-
-    <!-- PROFILE & REGISTRATION VIEW -->
-    <div id="view-profile" style="display:none;">
-      <!-- Registration / Login Selection -->
-      <div class="card" id="auth-box">
-        <h2>Account Registration & KYC</h2>
-        <label>Register As</label>
-        <select id="reg-role" onchange="toggleRegForm()">
-          <option value="customer">Customer</option>
-          <option value="partner">Delivery Partner (With KYC)</option>
-        </select>
-
-        <label>Full Name</label>
-        <input id="reg-name" placeholder="Enter your full name">
-
-        <label>Mobile Number</label>
-        <input id="reg-phone" placeholder="10-digit mobile number" maxlength="10">
-
-        <!-- Extra KYC Fields for Delivery Partner -->
-        <div id="kyc-fields" style="display:none;">
-          <label>Aadhaar Card Number</label>
-          <input id="reg-aadhaar" placeholder="12-digit Aadhaar Number" maxlength="12">
-
-          <label>PAN Card Number</label>
-          <input id="reg-pan" placeholder="10-digit PAN Number" maxlength="10">
-
-          <label>Driving Licence Number</label>
-          <input id="reg-dl" placeholder="DL Number">
-
-          <label>Live Photo Capture (Selfie)</label>
-          <div class="camera-container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas" style="display:none;"></canvas>
-            <img id="photo-preview" class="preview" style="display:none;">
-          </div>
-          <button class="btn-main btn-secondary" onclick="capturePhoto()" style="margin-top:6px;">📸 Capture Live Selfie</button>
-        </div>
-
-        <button class="btn-main" onclick="registerUser()">Complete Registration</button>
-      </div>
-
-      <!-- Logged In Profile View -->
-      <div class="card" id="profile-details" style="display:none;">
-        <h2>User Profile</h2>
-        <div id="profile-card-content"></div>
-        <button class="btn-main btn-secondary" onclick="logoutUser()">Logout</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Leaflet OpenStreetMap JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <script>
-    // --- GLOBAL STATE ---
-    let currentView = 'customer';
-    let map, pickupMarker, dropMarker, routePolyline;
-    let pickupCoords = [22.7533, 75.8937]; // Vijay Nagar, Indore
-    let dropCoords = [22.7244, 75.8839];   // Palasia, Indore
-    let isDutyOnline = false;
-    let userStream = null;
-    let capturedPhotoData = null;
-
-    // --- INITIALIZATION ---
-    window.onload = () => {
-      initMap();
-      calculateFare();
-      renderBookings();
-      checkAuthStatus();
-    };
-
-    // --- MAP SYSTEM (Leaflet.js) ---
-    function initMap() {
-      map = L.map('map').setView([22.7196, 75.8577], 12); // Center: Indore
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-      }).addTo(map);
-
-      pickupMarker = L.marker(pickupCoords, {draggable: true}).addTo(map).bindPopup("Pickup Location");
-      dropMarker = L.marker(dropCoords, {draggable: true}).addTo(map).bindPopup("Drop Location");
-
-      pickupMarker.on('dragend', updatePointsFromMap);
-      dropMarker.on('dragend', updatePointsFromMap);
-
-      map.on('click', (e) => {
-        dropCoords = [e.latlng.lat, e.latlng.lng];
-        dropMarker.setLatLng(e.latlng);
-        updatePointsFromMap();
-      });
-
-      drawRoute();
-    }
-
-    function updatePointsFromMap() {
-      pickupCoords = [pickupMarker.getLatLng().lat, pickupMarker.getLatLng().lng];
-      dropCoords = [dropMarker.getLatLng().lat, dropMarker.getLatLng().lng];
-      drawRoute();
-      
-      // Calculate Distance using Haversine formula
-      let d = getDistanceKm(pickupCoords[0], pickupCoords[1], dropCoords[0], dropCoords[1]);
-      document.getElementById('km').value = d.toFixed(1);
-      calculateFare();
-    }
-
-    function drawRoute() {
-      if (routePolyline) map.removeLayer(routePolyline);
-      routePolyline = L.polyline([pickupCoords, dropCoords], {color: '#16865b', weight: 4}).addTo(map);
-    }
-
-    function getDistanceKm(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-    }
-
-    // --- FARE CALCULATION ---
-    document.getElementById('vehicle').addEventListener('change', calculateFare);
-    function calculateFare() {
-      let vehicle = document.getElementById('vehicle').value;
-      let km = parseFloat(document.getElementById('km').value) || 1;
-      let base = 25, rate = 8;
-
-      if (vehicle === '3 Wheeler') { base = 50; rate = 15; }
-      else if (vehicle === 'Tata Ace') { base = 80; rate = 22; }
-
-      let total = Math.round(base + (km * rate));
-      document.getElementById('fare-display').textContent = '₹' + total;
-      return total;
-    }
-
-    // --- VIEW SWITCHING ---
-    function switchView(view) {
-      currentView = view;
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('tab-' + view).classList.add('active');
-
-      document.getElementById('view-customer').style.display = view === 'customer' ? 'block' : 'none';
-      document.getElementById('view-partner').style.display = view === 'partner' ? 'block' : 'none';
-      document.getElementById('view-profile').style.display = view === 'profile' ? 'block' : 'none';
-
-      if (view === 'profile') initCamera();
-    }
-
-    // --- CAMERA & KYC SYSTEM ---
-    function toggleRegForm() {
-      let role = document.getElementById('reg-role').value;
-      document.getElementById('kyc-fields').style.display = role === 'partner' ? 'block' : 'none';
-      if(role === 'partner') initCamera();
-    }
-
-    async function initCamera() {
-      try {
-        userStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById('video').srcObject = userStream;
-      } catch (err) {
-        console.log("Camera permissions not granted or available.");
-      }
-    }
-
-    function capturePhoto() {
-      let video = document.getElementById('video');
-      let canvas = document.getElementById('canvas');
-      let preview = document.getElementById('photo-preview');
-
-      canvas.width = video.videoWidth || 300;
-      canvas.height = video.videoHeight || 200;
-      let ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      capturedPhotoData = canvas.toDataURL('image/png');
-      preview.src = capturedPhotoData;
-      preview.style.display = 'block';
-      video.style.display = 'none';
-    }
-
-    // --- AUTHENTICATION & LOCAL STORAGE ---
-    function registerUser() {
-      let role = document.getElementById('reg-role').value;
-      let name = document.getElementById('reg-name').value.trim();
-      let phone = document.getElementById('reg-phone').value.trim();
-
-      if (!name || phone.length !== 10) {
-        alert("Kripya sahi naam aur 10-digit mobile number bharein.");
-        return;
-      }
-
-      let user = { role, name, phone, verified: true };
-
-      if (role === 'partner') {
-        let aadhaar = document.getElementById('reg-aadhaar').value;
-        let pan = document.getElementById('reg-pan').value;
-        let dl = document.getElementById('reg-dl').value;
-
-        if (aadhaar.length !== 12 || pan.length !== 10 || !dl || !capturedPhotoData) {
-          alert("Partners ke liye Aadhaar, PAN, DL aur Live Selfie capture karna anivarya hai.");
-          return;
-        }
-
-        user.aadhaar = aadhaar;
-        user.pan = pan;
-        user.dl = dl;
-        user.photo = capturedPhotoData;
-      }
-
-      localStorage.setItem('qs_user', JSON.stringify(user));
-      alert("Registration Successful!");
-      checkAuthStatus();
-    }
-
-    function checkAuthStatus() {
-      let u = JSON.parse(localStorage.getItem('qs_user') || 'null');
-      if (u) {
-        document.getElementById('auth-box').style.display = 'none';
-        document.getElementById('profile-details').style.display = 'block';
-        document.getElementById('profile-card-content').innerHTML = `
-          <div style="display:flex; gap:12px; align-items:center;">
-            ${u.photo ? `<img src="${u.photo}" style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid #16865b;">` : ''}
-            <div>
-              <h3>${u.name} <span class="verified-tag">✓ Verified ${u.role.toUpperCase()}</span></h3>
-              <p style="font-size:13px; color:#666;">Mobile: ${u.phone}</p>
-              ${u.role === 'partner' ? `<p style="font-size:12px; color:#333;">DL: ${u.dl} | PAN: ${u.pan}</p>` : ''}
+    <div class="form-section">
+        <!-- Service Type Selection -->
+        <div class="input-group">
+            <label>Aapko kya sahayata chahiye?</label>
+            <div class="services-grid">
+                <div class="service-card active" onclick="selectService('parcel', this)">📦 Parcel / Delivery</div>
+                <div class="service-card" onclick="selectService('petrol', this)">⛽ Petrol Delivery</div>
+                <div class="service-card" onclick="selectService('mechanic', this)">🔧 Puncture / Mechanic</div>
+                <div class="service-card" onclick="selectService('other', this)">🛍️ Custom Task</div>
             </div>
-          </div>
-        `;
-      } else {
-        document.getElementById('auth-box').style.display = 'block';
-        document.getElementById('profile-details').style.display = 'none';
-      }
-    }
-
-    function logoutUser() {
-      localStorage.removeItem('qs_user');
-      checkAuthStatus();
-    }
-
-    // --- BOOKING ENGINE ---
-    function getBookings() { return JSON.parse(localStorage.getItem('qs_bookings') || '[]'); }
-    function saveBookings(b) { localStorage.setItem('qs_bookings', JSON.stringify(b)); }
-
-    function createBooking() {
-      let p = document.getElementById('pickup').value;
-      let d = document.getElementById('drop').value;
-      let fare = calculateFare();
-
-      let booking = {
-        id: 'QS' + Math.floor(Math.random() * 8999 + 1000),
-        service: document.getElementById('service').value,
-        vehicle: document.getElementById('vehicle').value,
-        pickup: p,
-        drop: d,
-        km: document.getElementById('km').value,
-        fare: fare,
-        status: 'Searching',
-        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-      };
-
-      let list = getBookings();
-      list.push(booking);
-      saveBookings(list);
-      alert('Booking Request Created! Check Partner Mode.');
-      renderBookings();
-    }
-
-    function toggleDuty() {
-      isDutyOnline = !isDutyOnline;
-      document.getElementById('duty-status').textContent = isDutyOnline ? 'Online' : 'Offline';
-      document.getElementById('duty-status').style.color = isDutyOnline ? 'green' : 'red';
-      document.getElementById('duty-btn').textContent = isDutyOnline ? 'Go Offline' : 'Go Online';
-      renderBookings();
-    }
-
-    function updateJobStatus(id, newStatus) {
-      let list = getBookings();
-      let item = list.find(x => x.id === id);
-      if (item) {
-        item.status = newStatus;
-        saveBookings(list);
-        renderBookings();
-      }
-    }
-
-    function renderBookings() {
-      let list = getBookings();
-
-      // Customer View History
-      let custHtml = list.slice().reverse().map(b => `
-        <div style="border-bottom:1px solid #eee; padding:8px 0;">
-          <div class="row"><b>${b.service} (${b.vehicle})</b> <span class="status-badge bg-${b.status.toLowerCase()}">${b.status}</span></div>
-          <div style="font-size:13px; color:#555;">${b.pickup} ➔ ${b.drop} (${b.km} km)</div>
-          <div class="row" style="margin-top:4px;"><span style="font-weight:bold; color:#16865b;">₹${b.fare}</span><span style="font-size:11px; color:#888;">${b.time}</span></div>
         </div>
-      `).join('');
-      document.getElementById('customer-history').innerHTML = custHtml || 'No bookings placed yet.';
 
-      // Partner View Requests
-      if (!isDutyOnline) {
-        document.getElementById('partner-requests').innerHTML = 'Please turn duty Online to accept bookings.';
-      } else {
-        let reqs = list.filter(b => b.status === 'Searching');
-        document.getElementById('partner-requests').innerHTML = reqs.map(b => `
-          <div style="background:#f9f9f9; padding:10px; border-radius:8px; margin-bottom:8px;">
-            <div class="row"><b>${b.service}</b> <span>₹${b.fare}</span></div>
-            <div style="font-size:12px;">Route: ${b.pickup} ➔ ${b.drop}</div>
-            <button class="btn-main" onclick="updateJobStatus('${b.id}', 'Accepted')" style="padding:6px; font-size:13px; margin-top:6px;">Accept Ride</button>
-          </div>
-        `).join('') || 'No active requests available right now.';
-      }
-
-      // Partner Active Jobs
-      let myJobs = list.filter(b => b.status === 'Accepted');
-      document.getElementById('partner-jobs').innerHTML = myJobs.map(b => `
-        <div style="background:#e8f5ee; padding:10px; border-radius:8px; margin-bottom:8px;">
-          <div class="row"><b>${b.service} — Active</b> <span>₹${b.fare}</span></div>
-          <div style="font-size:12px;">Pickup: ${b.pickup}</div>
-          <button class="btn-main" onclick="updateJobStatus('${b.id}', 'Completed')" style="padding:6px; font-size:13px; margin-top:6px; background:#153b55;">Complete Job</button>
+        <!-- Pickup Location -->
+        <div class="input-group">
+            <label>📍 Pickup Location (Kahan se?)</label>
+            <input type="text" id="pickup" placeholder="Apna current address ya landmark dalein">
         </div>
-      `).join('') || 'No active jobs currently.';
+
+        <!-- Drop Location -->
+        <div class="input-group" id="dropGroup">
+            <label>🎯 Drop Location (Kahan bhejna hai?)</label>
+            <input type="text" id="drop" placeholder="Manzil ka pata dalein">
+        </div>
+
+        <!-- Parcel Size / Extra Details -->
+        <div class="input-group" id="parcelSizeGroup">
+            <label>📏 Parcel ka Size / Vajan</label>
+            <select id="parcelSize" onchange="calculateFare()">
+                <option value="small">Chhota (Documents, Keys - 0 to 2 kg)</option>
+                <option value="medium">Medium (Box, Clothes - 2 to 5 kg)</option>
+                <option value="large">Bada (Heavy bag / Large box - 5+ kg)</option>
+            </select>
+        </div>
+
+        <!-- Estimated Fare Show Box -->
+        <div class="fare-box">
+            <span>Estimated Kiraya:</span>
+            <span id="totalFare">₹ 49</span>
+        </div>
+
+        <!-- Book Button -->
+        <button class="btn-book" onclick="bookService()">Book Now 🚀</button>
+    </div>
+</div>
+
+<script>
+    let currentService = 'parcel';
+
+    function selectService(service, element) {
+        currentService = service;
+        
+        // Remove active class from all cards
+        document.querySelectorAll('.service-card').forEach(card => card.classList.remove('active'));
+        // Add active to clicked card
+        element.classList.add('active');
+
+        // Hide/Show fields based on service
+        const dropGroup = document.getElementById('dropGroup');
+        const parcelSizeGroup = document.getElementById('parcelSizeGroup');
+
+        if (service === 'petrol' || service === 'mechanic') {
+            dropGroup.style.display = 'none';
+            parcelSizeGroup.style.display = 'none';
+            document.getElementById('totalFare').innerText = service === 'petrol' ? '₹ 79 + Fuel Cost' : '₹ 99';
+        } else {
+            dropGroup.style.display = 'block';
+            parcelSizeGroup.style.display = 'block';
+            calculateFare();
+        }
     }
-  </script>
+
+    function calculateFare() {
+        if(currentService !== 'parcel' && currentService !== 'other') return;
+        
+        const size = document.getElementById('parcelSize').value;
+        let basePrice = 40;
+        
+        if (size === 'medium') basePrice = 70;
+        if (size === 'large') basePrice = 110;
+
+        document.getElementById('totalFare').innerText = '₹ ' + basePrice;
+    }
+
+    function bookService() {
+        const pickup = document.getElementById('pickup').value;
+        if(!pickup) {
+            alert('Kripya pickup location darj karein!');
+            return;
+        }
+        alert('Aapki booking safal rahi! Quick Sathi partner jald hi aapse sampark karega.');
+    }
+</script>
+
 </body>
 </html>
