@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Sathi - Fast Parcel Delivery</title>
+    <title>Quick Sathi - Smart Delivery App</title>
     <style>
         :root {
             --primary: #ff4757;
@@ -30,7 +30,7 @@
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
-            padding-bottom: 20px;
+            padding-bottom: 25px;
         }
         header {
             background: var(--primary);
@@ -78,6 +78,7 @@
         }
         .input-group {
             margin-bottom: 15px;
+            position: relative;
         }
         label {
             display: block;
@@ -98,29 +99,56 @@
         input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
         }
-        .permission-box {
-            background: #f8f9fa;
-            border: 1px dashed #ced6e0;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            color: #57606f;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .perm-btn {
-            background: #747d8c;
+        .gps-btn {
+            background: #2ed573;
             color: white;
             border: none;
-            padding: 6px 10px;
+            padding: 6px 12px;
             border-radius: 5px;
-            cursor: pointer;
             font-size: 11px;
+            cursor: pointer;
+            margin-top: 5px;
+            display: inline-block;
         }
-        .perm-btn.granted {
-            background: #2ed573;
+        /* Suggestions Dropdown */
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dcdde1;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+        .suggestion-item {
+            padding: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f2f6;
+        }
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+        /* Mini Map Box */
+        .map-box {
+            width: 100%;
+            height: 110px;
+            background: #dfe4ea;
+            border-radius: 8px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #57606f;
+            font-size: 12px;
+            border: 1px dashed #ced6e0;
+            background-image: linear-gradient(45deg, #f1f2f6 25%, transparent 25%), linear-gradient(-45deg, #f1f2f6 25%, transparent 25%);
+            background-size: 20px 20px;
         }
         .fare-box {
             background: #f1f2f6;
@@ -149,7 +177,7 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: opacity 0.3s;
         }
         .btn-main:hover {
             opacity: 0.9;
@@ -161,6 +189,21 @@
             margin-bottom: 15px;
             border-left: 4px solid var(--primary);
         }
+        .otp-display {
+            background: #fff0f1;
+            border: 1px dashed var(--primary);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+        .otp-display h3 {
+            color: var(--primary);
+            font-size: 18px;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -168,7 +211,7 @@
 <div class="container">
     <header>
         <h1>📦 Quick Sathi</h1>
-        <p>Aapka Apna Trusted Parcel Delivery Partner</p>
+        <p>Aapka Apna Smart Delivery Partner</p>
     </header>
 
     <!-- Navigation Tabs -->
@@ -180,24 +223,21 @@
     <!-- TAB 1: BOOK PARCEL -->
     <div id="bookSection" class="section-content active">
         
-        <!-- Permissions Check Section -->
-        <div class="permission-box">
-            <span>📍 Location Access</span>
-            <button id="locBtn" class="perm-btn" onclick="requestPermission('loc')">Enable</button>
-        </div>
-        <div class="permission-box">
-            <span>📷 Camera & 🎤 Voice Access</span>
-            <button id="camBtn" class="perm-btn" onclick="requestPermission('cam')">Enable</button>
-        </div>
-
+        <!-- Pickup Location with Auto-suggest & GPS -->
         <div class="input-group">
             <label>📍 Pickup Location (Kahan se lana hai?)</label>
-            <input type="text" id="pickupLoc" placeholder="Apna pura pata ya landmark dalein">
+            <input type="text" id="pickupLoc" placeholder="City ya area ka naam likhein..." oninput="showSuggestions(this.value, 'pickup')" autocomplete="off">
+            <div id="pickupSuggestions" class="suggestions-list"></div>
+            <button class="gps-btn" onclick="useCurrentLocation('pickup')">📍 Use My Current Location</button>
+            <div class="map-box" id="pickupMap">🗺️ Pickup Map Preview</div>
         </div>
 
+        <!-- Drop Location with Auto-suggest -->
         <div class="input-group">
             <label>🎯 Drop Location (Kahan bhejna hai?)</label>
-            <input type="text" id="dropLoc" placeholder="Manzil ka pata dalein">
+            <input type="text" id="dropLoc" placeholder="Manzil city ya area likhein..." oninput="showSuggestions(this.value, 'drop')" autocomplete="off">
+            <div id="dropSuggestions" class="suggestions-list"></div>
+            <div class="map-box" id="dropMap">🗺️ Drop Destination Map</div>
         </div>
 
         <div class="input-group">
@@ -209,23 +249,25 @@
             </select>
         </div>
 
-        <div class="input-group">
-            <label>💬 Kuch khas baat (Optional Voice/Text note)</label>
-            <textarea id="note" rows="2" placeholder="Jaise: Saman nazuk hai, ya raste mein call karein..."></textarea>
-        </div>
-
         <div class="fare-box">
             <span>Estimated Kiraya:</span>
             <span id="totalFare">₹ 50</span>
         </div>
 
-        <button class="btn-main" onclick="bookParcel()">Book Parcel Now 🚀</button>
+        <button class="btn-main" onclick="bookParcel()">Book Parcel & Get Secure OTP 🚀</button>
+
+        <!-- Secure Delivery OTP Box -->
+        <div id="otpBox" class="otp-display">
+            <span style="font-size: 13px; font-weight: 600; color: #333;">🔒 Delivery Security OTP:</span>
+            <h3 id="generatedOtp">----</h3>
+            <p style="font-size: 11px; color: #666; margin-top: 4px;">Parcel deliver hote waqt delivery boy ko ye OTP batayein.</p>
+        </div>
     </div>
 
     <!-- TAB 2: PROFILE -->
     <div id="profileSection" class="section-content">
         <div class="profile-card">
-            <h3 style="margin-bottom: 10px; color: #2f3640;">👤 User Information</h3>
+            <h3 style="margin-bottom: 10px; color: #2f3640;">👤 User Profile</h3>
             <div class="input-group">
                 <label>Aapka Naam</label>
                 <input type="text" id="userName" placeholder="Apna pura naam likhein">
@@ -234,10 +276,6 @@
                 <label>Mobile Number</label>
                 <input type="tel" id="userPhone" placeholder="10-digit mobile number">
             </div>
-            <div class="input-group">
-                <label>Default Address</label>
-                <input type="text" id="userAddress" placeholder="Ghar ya office ka pata">
-            </div>
             <button class="btn-main" onclick="saveProfile()">Save Profile 💾</button>
         </div>
     </div>
@@ -245,6 +283,14 @@
 </div>
 
 <script>
+    // Sample Cities / Locations for auto-suggest
+    const locationsList = [
+        "Indore - AB Road", "Indore - Vijay Nagar", "Indore - Rajwada", "Indore - Bhanwarkuan",
+        "Bhopal - MP Nagar", "Bhopal - New Market", "Bhopal - Lalghati",
+        "Khargone - Bus Stand", "Khargone - Gogawa Road", "Dhamnod - Main Market",
+        "Ujjain - Freeganj", "Dewas - AB Road", "Mumbai - Andheri", "Delhi - Connaught Place"
+    ];
+
     // Tab Switching Logic
     function switchTab(tabName, element) {
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -252,26 +298,66 @@
 
         element.classList.add('active');
         if(tabName === 'book') {
-            document.getElementById('bookSection').classList.add('class', '').classList.add('active');
+            document.getElementById('bookSection').classList.add('active');
         } else {
             document.getElementById('profileSection').classList.add('active');
         }
     }
 
-    // Permission simulation
-    function requestPermission(type) {
-        if(type === 'loc') {
+    // Auto-suggest cities search bar logic
+    function showSuggestions(val, type) {
+        const listId = type === 'pickup' ? 'pickupSuggestions' : 'dropSuggestions';
+        const listDiv = document.getElementById(listId);
+        
+        if(!val) {
+            listDiv.style.display = 'none';
+            return;
+        }
+
+        const filtered = locationsList.filter(item => item.toLowerCase().includes(val.toLowerCase()));
+        
+        if(filtered.length > 0) {
+            let html = '';
+            filtered.forEach(city => {
+                html += `<div class="suggestion-item" onclick="selectCity('${city}', '${type}')">${city}</div>`;
+            });
+            listDiv.innerHTML = html;
+            listDiv.style.display = 'block';
+        } else {
+            listDiv.style.display = 'none';
+        }
+    }
+
+    function selectCity(cityName, type) {
+        if(type === 'pickup') {
+            document.getElementById('pickupLoc').value = cityName;
+            document.getElementById('pickupSuggestions').style.display = 'none';
+            document.getElementById('pickupMap').innerHTML = '📍 Map Loaded for: ' + cityName;
+        } else {
+            document.getElementById('dropLoc').value = cityName;
+            document.getElementById('dropSuggestions').style.display = 'none';
+            document.getElementById('dropMap').innerHTML = '🎯 Map Loaded for: ' + cityName;
+        }
+    }
+
+    // Use Current GPS Location
+    function useCurrentLocation(type) {
+        if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
-                document.getElementById('locBtn').innerText = 'Allowed ✓';
-                document.getElementById('locBtn').classList.add('granted');
-                alert('Location successfully fetched!');
+                const lat = position.coords.latitude.toFixed(4);
+                const lon = position.coords.longitude.toFixed(4);
+                const locText = `Current GPS Location (${lat}, ${lon})`;
+                
+                if(type === 'pickup') {
+                    document.getElementById('pickupLoc').value = locText;
+                    document.getElementById('pickupMap').innerHTML = '📍 Live GPS Map Active (' + lat + ', ' + lon + ')';
+                }
+                alert('GPS Location successfully fetched!');
             }, () => {
-                alert('Location permission denied or failed.');
+                alert('Location access denied or unavailable.');
             });
         } else {
-            document.getElementById('camBtn').innerText = 'Allowed ✓';
-            document.getElementById('camBtn').classList.add('granted');
-            alert('Camera & Voice permissions granted!');
+            alert('Geolocation is not supported by your browser.');
         }
     }
 
@@ -284,15 +370,21 @@
         document.getElementById('totalFare').innerText = '₹ ' + price;
     }
 
-    // Booking trigger
+    // Booking trigger with Secure OTP generation
     function bookParcel() {
         const pickup = document.getElementById('pickupLoc').value;
         const drop = document.getElementById('dropLoc').value;
         if(!pickup || !drop) {
-            alert('Kripya Pickup aur Drop dono location bharein!');
+            alert('Kripya Pickup aur Drop dono locations select karein!');
             return;
         }
-        alert('🎉 Aapki parcel booking ho gayi hai! Jaldi hi delivery partner aapse judege.');
+
+        // Generate 4 digit random OTP
+        const randomOtp = Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('generatedOtp').innerText = randomOtp;
+        document.getElementById('otpBox').style.display = 'block';
+
+        alert('🎉 Booking Successful! Delivery verification ke liye OTP generate ho gaya hai.');
     }
 
     // Save Profile
