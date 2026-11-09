@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Sathi - Smart Delivery App</title>
+    <title>Quick Sathi - Live Map Delivery App</title>
+    <!-- Leaflet CSS for Live Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --primary: #ff4757;
@@ -87,7 +89,7 @@
             font-size: 13px;
             color: #4b6584;
         }
-        input, select, textarea {
+        input, select {
             width: 100%;
             padding: 12px;
             border: 1px solid #dcdde1;
@@ -96,7 +98,7 @@
             outline: none;
             transition: border 0.3s;
         }
-        input:focus, select:focus, textarea:focus {
+        input:focus, select:focus {
             border-color: var(--primary);
         }
         .gps-btn {
@@ -122,7 +124,7 @@
             border-radius: 0 0 8px 8px;
             max-height: 150px;
             overflow-y: auto;
-            z-index: 10;
+            z-index: 100;
             display: none;
         }
         .suggestion-item {
@@ -134,21 +136,14 @@
         .suggestion-item:hover {
             background-color: #f8f9fa;
         }
-        /* Mini Map Box */
-        .map-box {
+        /* Asli Live Map Box */
+        .map-container {
             width: 100%;
-            height: 110px;
-            background: #dfe4ea;
+            height: 140px;
             border-radius: 8px;
             margin-top: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #57606f;
-            font-size: 12px;
-            border: 1px dashed #ced6e0;
-            background-image: linear-gradient(45deg, #f1f2f6 25%, transparent 25%), linear-gradient(-45deg, #f1f2f6 25%, transparent 25%);
-            background-size: 20px 20px;
+            border: 1px solid #ced6e0;
+            z-index: 1;
         }
         .fare-box {
             background: #f1f2f6;
@@ -211,7 +206,7 @@
 <div class="container">
     <header>
         <h1>📦 Quick Sathi</h1>
-        <p>Aapka Apna Smart Delivery Partner</p>
+        <p>Aapka Apna Smart Live Delivery Partner</p>
     </header>
 
     <!-- Navigation Tabs -->
@@ -223,21 +218,21 @@
     <!-- TAB 1: BOOK PARCEL -->
     <div id="bookSection" class="section-content active">
         
-        <!-- Pickup Location with Auto-suggest & GPS -->
+        <!-- Pickup Location -->
         <div class="input-group">
             <label>📍 Pickup Location (Kahan se lana hai?)</label>
             <input type="text" id="pickupLoc" placeholder="City ya area ka naam likhein..." oninput="showSuggestions(this.value, 'pickup')" autocomplete="off">
             <div id="pickupSuggestions" class="suggestions-list"></div>
-            <button class="gps-btn" onclick="useCurrentLocation('pickup')">📍 Use My Current Location</button>
-            <div class="map-box" id="pickupMap">🗺️ Pickup Map Preview</div>
+            <button class="gps-btn" onclick="useCurrentLocation()">📍 Use My Current Location</button>
+            <div id="pickupMap" class="map-container"></div>
         </div>
 
-        <!-- Drop Location with Auto-suggest -->
+        <!-- Drop Location -->
         <div class="input-group">
             <label>🎯 Drop Location (Kahan bhejna hai?)</label>
             <input type="text" id="dropLoc" placeholder="Manzil city ya area likhein..." oninput="showSuggestions(this.value, 'drop')" autocomplete="off">
             <div id="dropSuggestions" class="suggestions-list"></div>
-            <div class="map-box" id="dropMap">🗺️ Drop Destination Map</div>
+            <div id="dropMap" class="map-container"></div>
         </div>
 
         <div class="input-group">
@@ -282,13 +277,44 @@
 
 </div>
 
+<!-- Leaflet JS for Live Map -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Sample Cities / Locations for auto-suggest
-    const locationsList = [
-        "Indore - AB Road", "Indore - Vijay Nagar", "Indore - Rajwada", "Indore - Bhanwarkuan",
-        "Bhopal - MP Nagar", "Bhopal - New Market", "Bhopal - Lalghati",
-        "Khargone - Bus Stand", "Khargone - Gogawa Road", "Dhamnod - Main Market",
-        "Ujjain - Freeganj", "Dewas - AB Road", "Mumbai - Andheri", "Delhi - Connaught Place"
+    // Initialize Maps on load (Default center set to Indore / India)
+    let pickupMap, dropMap;
+    let pickupMarker, dropMarker;
+
+    window.onload = function() {
+        // Default coordinates (Indore center)
+        const defaultLat = 22.7196;
+        const defaultLon = 75.8577;
+
+        // Pickup Map
+        pickupMap = L.map('pickupMap').setView([defaultLat, defaultLon], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(pickupMap);
+        pickupMarker = L.marker([defaultLat, defaultLon]).addTo(pickupMap);
+
+        // Drop Map
+        dropMap = L.map('dropMap').setView([defaultLat, defaultLon], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(dropMap);
+        dropMarker = L.marker([defaultLat, defaultLon]).addTo(dropMap);
+    };
+
+    // Sample locations data with coordinates for live map panning
+    const locationsData = [
+        { name: "Indore - Vijay Nagar", lat: 22.7480, lon: 75.8936 },
+        { name: "Indore - Rajwada", lat: 22.7179, lon: 75.8533 },
+        { name: "Indore - Bhanwarkuan", lat: 22.6881, lon: 75.8675 },
+        { name: "Bhopal - MP Nagar", lat: 23.2332, lon: 77.4340 },
+        { name: "Khargone - Bus Stand", lat: 21.8170, lon: 75.6139 },
+        { name: "Dhamnod - Main Market", lat: 22.2227, lon: 75.4746 },
+        { name: "Ujjain - Freeganj", lat: 23.1793, lon: 75.7849 }
     ];
 
     // Tab Switching Logic
@@ -299,12 +325,17 @@
         element.classList.add('active');
         if(tabName === 'book') {
             document.getElementById('bookSection').classList.add('active');
+            // Fix map rendering bug when switching tabs
+            setTimeout(() => {
+                pickupMap.invalidateSize();
+                dropMap.invalidateSize();
+            }, 200);
         } else {
             document.getElementById('profileSection').classList.add('active');
         }
     }
 
-    // Auto-suggest cities search bar logic
+    // Auto-suggest search bar logic
     function showSuggestions(val, type) {
         const listId = type === 'pickup' ? 'pickupSuggestions' : 'dropSuggestions';
         const listDiv = document.getElementById(listId);
@@ -314,12 +345,12 @@
             return;
         }
 
-        const filtered = locationsList.filter(item => item.toLowerCase().includes(val.toLowerCase()));
+        const filtered = locationsData.filter(item => item.name.toLowerCase().includes(val.toLowerCase()));
         
         if(filtered.length > 0) {
             let html = '';
-            filtered.forEach(city => {
-                html += `<div class="suggestion-item" onclick="selectCity('${city}', '${type}')">${city}</div>`;
+            filtered.forEach(loc => {
+                html += `<div class="suggestion-item" onclick="selectLocation('${loc.name}', ${loc.lat}, ${loc.lon}, '${type}')">${loc.name}</div>`;
             });
             listDiv.innerHTML = html;
             listDiv.style.display = 'block';
@@ -328,31 +359,33 @@
         }
     }
 
-    function selectCity(cityName, type) {
+    function selectLocation(name, lat, lon, type) {
         if(type === 'pickup') {
-            document.getElementById('pickupLoc').value = cityName;
+            document.getElementById('pickupLoc').value = name;
             document.getElementById('pickupSuggestions').style.display = 'none';
-            document.getElementById('pickupMap').innerHTML = '📍 Map Loaded for: ' + cityName;
+            pickupMap.setView([lat, lon], 15);
+            pickupMarker.setLatLng([lat, lon]);
         } else {
-            document.getElementById('dropLoc').value = cityName;
+            document.getElementById('dropLoc').value = name;
             document.getElementById('dropSuggestions').style.display = 'none';
-            document.getElementById('dropMap').innerHTML = '🎯 Map Loaded for: ' + cityName;
+            dropMap.setView([lat, lon], 15);
+            dropMarker.setLatLng([lat, lon]);
         }
     }
 
     // Use Current GPS Location
-    function useCurrentLocation(type) {
+    function useCurrentLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
-                const lat = position.coords.latitude.toFixed(4);
-                const lon = position.coords.longitude.toFixed(4);
-                const locText = `Current GPS Location (${lat}, ${lon})`;
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const locText = `Current GPS Location (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
                 
-                if(type === 'pickup') {
-                    document.getElementById('pickupLoc').value = locText;
-                    document.getElementById('pickupMap').innerHTML = '📍 Live GPS Map Active (' + lat + ', ' + lon + ')';
-                }
-                alert('GPS Location successfully fetched!');
+                document.getElementById('pickupLoc').value = locText;
+                pickupMap.setView([lat, lon], 16);
+                pickupMarker.setLatLng([lat, lon]);
+                
+                alert('Live GPS Location map par set ho gayi hai!');
             }, () => {
                 alert('Location access denied or unavailable.');
             });
@@ -379,7 +412,6 @@
             return;
         }
 
-        // Generate 4 digit random OTP
         const randomOtp = Math.floor(1000 + Math.random() * 9000);
         document.getElementById('generatedOtp').innerText = randomOtp;
         document.getElementById('otpBox').style.display = 'block';
