@@ -30,8 +30,8 @@
         .auth-screen {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: white;
-            z-index: 100;
+            background: #ffffff;
+            z-index: 300;
             padding: 30px 20px;
             display: flex;
             flex-direction: column;
@@ -55,7 +55,7 @@
         /* Side Drawer Menu */
         .side-drawer {
             position: fixed;
-            top: 0; left: -280px;
+            top: 0; left: -290px;
             width: 280px; height: 100%;
             background: white;
             z-index: 200;
@@ -97,7 +97,7 @@
             border-top-right-radius: 25px;
             padding: 20px;
             box-shadow: 0 -5px 25px rgba(0,0,0,0.15);
-            max-height: 80vh;
+            max-height: 75vh;
             overflow-y: auto;
         }
 
@@ -109,7 +109,6 @@
             margin-bottom: 10px;
             display: flex;
             align-items: center;
-            cursor: pointer;
         }
         .input-box input {
             border: none;
@@ -162,84 +161,68 @@
             width: 100%;
             flex: 1;
         }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 50;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-        }
     </style>
 </head>
 <body>
 
     <!-- 1. LOGIN / OTP & PROFILE SETUP -->
     <div id="authScreen" class="auth-screen">
-        <h2 style="color: #ff4757; margin-bottom: 8px;">Quick Sathi</h2>
-        <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Customer Delivery App</p>
+        <h2 style="color: #ff4757; margin-bottom: 8px; text-align: center;">📦 Quick Sathi</h2>
+        <p style="color: #718093; font-size: 13px; margin-bottom: 25px; text-align: center;">Customer Parcel Delivery App</p>
 
+        <!-- STEP 1: MOBILE -->
         <div id="stepMobile">
+            <label style="font-size: 12px; font-weight: bold; color: #2f3640; display: block; margin-bottom: 5px;">Enter Mobile Number:</label>
             <div class="input-box">
                 <span>📱 +91</span>
-                <input type="tel" id="userPhoneInput" placeholder="Enter Mobile Number" maxlength="10">
+                <input type="tel" id="userPhone" placeholder="10-Digit Phone Number" maxlength="10" value="9876543210">
             </div>
-            <button class="btn-main" onclick="sendOtp()">Send OTP</button>
+            <button class="btn-main" onclick="sendOtp()">Send OTP 🚀</button>
         </div>
 
+        <!-- STEP 2: OTP -->
         <div id="stepOtp" style="display:none;">
-            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Enter 4-Digit OTP:</p>
+            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Enter 4-Digit OTP (Use <b>1234</b>):</p>
             <div class="input-box">
                 <span>🔑</span>
-                <input type="text" id="otpInput" placeholder="Enter OTP (Use 1234)" maxlength="4">
+                <input type="text" id="otpInput" placeholder="Enter OTP" maxlength="4" value="1234">
             </div>
-            <button class="btn-main" onclick="verifyOtp()">Verify OTP</button>
+            <button class="btn-main" onclick="verifyOtp()">Verify OTP ✅</button>
         </div>
 
+        <!-- STEP 3: PROFILE -->
         <div id="stepProfile" style="display:none;">
-            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Create Profile:</p>
+            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Setup Your Profile:</p>
             <div class="input-box">
                 <span>👤</span>
-                <input type="text" id="userNameInput" placeholder="Full Name">
+                <input type="text" id="userName" placeholder="Full Name" value="Lakhan Chouhan">
             </div>
             <div class="input-box">
                 <span>📧</span>
-                <input type="email" id="userEmailInput" placeholder="Email Address">
+                <input type="email" id="userEmail" placeholder="Email Address" value="lakhan@gmail.com">
             </div>
-            <button class="btn-main" onclick="saveProfile()">Save & Start 🚀</button>
+            <button class="btn-main" onclick="saveProfile()">Start App Now 🚀</button>
         </div>
     </div>
 
     <!-- 2. SIDE DRAWER MENU -->
     <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
     <div id="sideDrawer" class="side-drawer">
-        <!-- Profile Header Clickable to Edit Profile -->
-        <div onclick="openEditProfile()" style="display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 10px; cursor: pointer; background: #f8f9fa; padding: 10px; border-radius: 10px;">
-            <div style="width: 45px; height: 45px; background: #ff4757; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold;" id="drawerDp">LC</div>
+        <div style="display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 10px;">
+            <div style="width: 50px; height: 50px; background: #ff4757; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold;" id="drawerDp">LC</div>
             <div>
-                <h4 id="drawerName" style="color: #2f3640; font-size: 15px;">Lakhan Chouhan</h4>
-                <p id="drawerPhone" style="color: #718093; font-size: 11px;">+91 9876543210</p>
-                <span style="font-size: 10px; color: #ff4757; font-weight: bold;">Edit Profile ✏️</span>
+                <h4 id="drawerName" style="color: #2f3640; font-size: 16px;">Lakhan Chouhan</h4>
+                <p id="drawerPhone" style="color: #718093; font-size: 12px;">+91 9876543210</p>
             </div>
         </div>
-        <div class="menu-item" onclick="openWallet()"><span>💰 Wallet (Bal: <span id="drawerWallet">₹100</span>)</span></div>
-        <div class="menu-item" onclick="alert('Refer & Earn: Share your link and earn ₹50 on first order!')"><span>🎁 Refer and Earn</span></div>
-        <div class="menu-item" onclick="alert('Help Desk: Call us at +91 78980XXXXX or chat with support.')"><span>🎧 Help Desk / Support</span></div>
-        <div class="menu-item" onclick="alert('Settings: Notifications, Language & Privacy')"><span>⚙️ Settings</span></div>
+        <div class="menu-item" onclick="alert('Wallet Balance: ₹100')"><span>💰 Wallet (Bal: ₹100)</span></div>
+        <div class="menu-item" onclick="alert('Refer & Earn: Share link and earn ₹50 on first order!')"><span>🎁 Refer and Earn</span></div>
+        <div class="menu-item" onclick="alert('Help Desk: Support available 24/7')"><span>🎧 Help Desk / Support</span></div>
+        <div class="menu-item" onclick="alert('Settings: Preferences & Account')"><span>⚙️ Settings</span></div>
         <div class="menu-item" onclick="logout()" style="color: #ff4757;"><span>🚪 Logout</span></div>
     </div>
 
-    <!-- 3. MAIN APP MAP & INTERFACE -->
+    <!-- 3. MAIN MAP INTERFACE -->
     <div id="map"></div>
 
     <div class="top-bar">
@@ -249,8 +232,8 @@
                 <h3 style="font-size: 15px; color: #2f3640;">📦 Quick Sathi</h3>
             </div>
         </div>
-        <button onclick="openWallet()" style="background:#f1f2f6; border:none; padding:6px 10px; border-radius:20px; font-weight:bold; cursor:pointer; font-size: 12px;">
-            💰 <span id="walletBal">₹100</span>
+        <button onclick="openDrawer()" style="background:#f1f2f6; border:none; padding:6px 10px; border-radius:20px; font-weight:bold; cursor:pointer; font-size: 12px;">
+            💰 ₹100
         </button>
     </div>
 
@@ -263,7 +246,7 @@
             <label style="font-size: 11px; font-weight: bold; color: #ff4757;">PICKUP LOCATION</label>
             <div class="input-box" onclick="openMapPicker('pickup')">
                 <span>📍</span>
-                <input type="text" id="pickAddress" placeholder="Tap to select pickup location on live map..." readonly>
+                <input type="text" id="pickAddress" placeholder="Click to select Pickup Location on Map..." readonly>
             </div>
             <div class="input-box">
                 <span>🏠</span>
@@ -280,7 +263,7 @@
             <label style="font-size: 11px; font-weight: bold; color: #ff4757;">DROP LOCATION</label>
             <div class="input-box" onclick="openMapPicker('drop')">
                 <span>🎯</span>
-                <input type="text" id="dropAddress" placeholder="Tap to select drop location on live map..." readonly>
+                <input type="text" id="dropAddress" placeholder="Click to select Drop Location on Map..." readonly>
             </div>
             <div class="input-box">
                 <span>🏠</span>
@@ -322,36 +305,119 @@
         <button class="btn-main" onclick="confirmOrder()">Confirm & Book Rider 🚀</button>
     </div>
 
-    <!-- 5. MAP PICKER MODAL (Live GPS tracking & Draggable Pin) -->
+    <!-- 5. MAP PICKER MODAL -->
     <div id="mapPickerModal" class="map-modal">
         <div style="padding: 15px; background: #2f3640; color: white; display: flex; justify-content: space-between; align-items: center;">
             <h4 id="pickerTitle">Select Location on Map</h4>
-            <button onclick="closeMapPicker()" style="background:#ff4757; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight: bold;">Confirm Point ✓</button>
+            <button onclick="closeMapPicker()" style="background:#ff4757; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">Done ✓</button>
         </div>
         <div id="pickerMap"></div>
-        <div style="padding: 10px; background: #fff; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd;">
-            📍 Map par marker (pin) ko drag karein ya tap karke location select karein.
-        </div>
     </div>
 
-    <!-- 6. EDIT PROFILE MODAL -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>✏️ Edit Profile</h3>
-                <span onclick="closeEditProfile()" style="cursor: pointer; font-size: 18px;">❌</span>
-            </div>
-            <div class="input-box">
-                <span>👤</span>
-                <input type="text" id="editName" placeholder="Full Name">
-            </div>
-            <div class="input-box">
-                <span>📧</span>
-                <input type="email" id="editEmail" placeholder="Email Address">
-            </div>
-            <div class="input-box">
-                <span>📱</span>
-                <input type="tel" id="editPhone" placeholder="Mobile Number">
-            </div>
-            <button
-                
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map, pickerMap, pickerMarker;
+        let currentPickerType = '';
+        let selectedFare = 50;
+        let selectedVehicle = 'Bike';
+
+        window.onload = function() {
+            // Main Map Init (Indore default)
+            map = L.map('map', {zoomControl: false}).setView([22.7196, 75.8577], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        };
+
+        // AUTH & PROFILE FUNCTIONS
+        function sendOtp() {
+            const phone = document.getElementById('userPhone').value;
+            if(phone.length < 10) { alert('Enter valid 10-digit mobile number!'); return; }
+            document.getElementById('stepMobile').style.display = 'none';
+            document.getElementById('stepOtp').style.display = 'block';
+        }
+
+        function verifyOtp() {
+            const otp = document.getElementById('otpInput').value;
+            if(!otp) { alert('Please enter OTP!'); return; }
+            document.getElementById('stepOtp').style.display = 'none';
+            document.getElementById('stepProfile').style.display = 'block';
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('userName').value;
+            const phone = document.getElementById('userPhone').value;
+            if(!name) { alert('Please enter your full name!'); return; }
+            
+            document.getElementById('drawerName').innerText = name;
+            document.getElementById('drawerPhone').innerText = '+91 ' + phone;
+            document.getElementById('drawerDp').innerText = name.substring(0, 2).toUpperCase();
+            
+            // Hide Auth Screen Completely
+            document.getElementById('authScreen').style.display = 'none';
+            
+            // Refresh map view to ensure rendering
+            if(map) map.invalidateSize();
+        }
+
+        function logout() { location.reload(); }
+
+        // DRAWER CONTROLS
+        function openDrawer() {
+            document.getElementById('sideDrawer').classList.add('open');
+            document.getElementById('drawerOverlay').style.display = 'block';
+        }
+        function closeDrawer() {
+            document.getElementById('sideDrawer').classList.remove('open');
+            document.getElementById('drawerOverlay').style.display = 'none';
+        }
+
+        // MAP PICKER LOGIC
+        function openMapPicker(type) {
+            currentPickerType = type;
+            document.getElementById('pickerTitle').innerText = type === 'pickup' ? 'Select Pickup Location' : 'Select Drop Location';
+            document.getElementById('mapPickerModal').style.display = 'flex';
+
+            setTimeout(() => {
+                if (!pickerMap) {
+                    pickerMap = L.map('pickerMap').setView([22.7196, 75.8577], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(pickerMap);
+                    
+                    pickerMap.on('click', function(e) {
+                        const lat = e.latlng.lat;
+                        const lng = e.latlng.lng;
+                        if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+                        pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
+
+                        if(currentPickerType === 'pickup') {
+                            document.getElementById('pickAddress').value = `Indore (Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)})`;
+                        } else {
+                            document.getElementById('dropAddress').value = `Indore (Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)})`;
+                        }
+                    });
+                } else {
+                    pickerMap.invalidateSize();
+                }
+            }, 300);
+        }
+
+        function closeMapPicker() {
+            document.getElementById('mapPickerModal').style.display = 'none';
+        }
+
+        // VEHICLE SELECTION
+        function selectVehicle(el, fare, type) {
+            document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedFare = fare;
+            selectedVehicle = type;
+        }
+
+        function confirmOrder() {
+            const pick = document.getElementById('pickAddress').value;
+            const drop = document.getElementById('dropAddress').value;
+            if(!pick || !drop) { alert('Kripya map se Pickup aur Drop location select karein!'); return; }
+            alert('🎉 Order Placed Successfully! Searching for nearby ' + selectedVehicle + ' rider...');
+        }
+    </script>
+</body>
+</html>
