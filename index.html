@@ -161,6 +161,25 @@
             width: 100%;
             flex: 1;
         }
+        
+        /* Modal Popup for Edit Profile */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 400;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            width: 100%;
+            max-width: 380px;
+        }
     </style>
 </head>
 <body>
@@ -170,7 +189,6 @@
         <h2 style="color: #ff4757; margin-bottom: 8px; text-align: center;">📦 Quick Sathi</h2>
         <p style="color: #718093; font-size: 13px; margin-bottom: 25px; text-align: center;">Customer Parcel Delivery App</p>
 
-        <!-- STEP 1: MOBILE -->
         <div id="stepMobile">
             <label style="font-size: 12px; font-weight: bold; color: #2f3640; display: block; margin-bottom: 5px;">Enter Mobile Number:</label>
             <div class="input-box">
@@ -180,7 +198,6 @@
             <button class="btn-main" onclick="sendOtp()">Send OTP 🚀</button>
         </div>
 
-        <!-- STEP 2: OTP -->
         <div id="stepOtp" style="display:none;">
             <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Enter 4-Digit OTP (Use <b>1234</b>):</p>
             <div class="input-box">
@@ -190,9 +207,8 @@
             <button class="btn-main" onclick="verifyOtp()">Verify OTP ✅</button>
         </div>
 
-        <!-- STEP 3: PROFILE -->
         <div id="stepProfile" style="display:none;">
-            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Setup Your Profile:</p>
+            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Create Your Profile:</p>
             <div class="input-box">
                 <span>👤</span>
                 <input type="text" id="userName" placeholder="Full Name" value="Lakhan Chouhan">
@@ -215,11 +231,33 @@
                 <p id="drawerPhone" style="color: #718093; font-size: 12px;">+91 9876543210</p>
             </div>
         </div>
+        <div class="menu-item" onclick="openEditProfile()"><span>✏️ Edit Profile / Details</span></div>
         <div class="menu-item" onclick="alert('Wallet Balance: ₹100')"><span>💰 Wallet (Bal: ₹100)</span></div>
         <div class="menu-item" onclick="alert('Refer & Earn: Share link and earn ₹50 on first order!')"><span>🎁 Refer and Earn</span></div>
         <div class="menu-item" onclick="alert('Help Desk: Support available 24/7')"><span>🎧 Help Desk / Support</span></div>
         <div class="menu-item" onclick="alert('Settings: Preferences & Account')"><span>⚙️ Settings</span></div>
         <div class="menu-item" onclick="logout()" style="color: #ff4757;"><span>🚪 Logout</span></div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: #2f3640;">✏️ Edit Profile</h3>
+            <div class="input-box">
+                <span>👤</span>
+                <input type="text" id="editName" placeholder="Full Name">
+            </div>
+            <div class="input-box">
+                <span>📧</span>
+                <input type="email" id="editEmail" placeholder="Email Address">
+            </div>
+            <div class="input-box">
+                <span>📱</span>
+                <input type="tel" id="editPhone" placeholder="Mobile Number">
+            </div>
+            <button class="btn-main" onclick="updateProfileData()">Save Changes ✓</button>
+            <button class="btn-main" style="background: #718093; margin-top: 8px;" onclick="closeEditProfile()">Cancel</button>
+        </div>
     </div>
 
     <!-- 3. MAIN MAP INTERFACE -->
@@ -246,7 +284,7 @@
             <label style="font-size: 11px; font-weight: bold; color: #ff4757;">PICKUP LOCATION</label>
             <div class="input-box" onclick="openMapPicker('pickup')">
                 <span>📍</span>
-                <input type="text" id="pickAddress" placeholder="Click to select Pickup Location on Map..." readonly>
+                <input type="text" id="pickAddress" placeholder="Drag Map Pin to select Pickup Location..." readonly>
             </div>
             <div class="input-box">
                 <span>🏠</span>
@@ -263,7 +301,7 @@
             <label style="font-size: 11px; font-weight: bold; color: #ff4757;">DROP LOCATION</label>
             <div class="input-box" onclick="openMapPicker('drop')">
                 <span>🎯</span>
-                <input type="text" id="dropAddress" placeholder="Click to select Drop Location on Map..." readonly>
+                <input type="text" id="dropAddress" placeholder="Drag Map Pin to select Drop Location..." readonly>
             </div>
             <div class="input-box">
                 <span>🏠</span>
@@ -305,13 +343,16 @@
         <button class="btn-main" onclick="confirmOrder()">Confirm & Book Rider 🚀</button>
     </div>
 
-    <!-- 5. MAP PICKER MODAL -->
+    <!-- 5. DRAGGABLE PIN MAP PICKER MODAL -->
     <div id="mapPickerModal" class="map-modal">
         <div style="padding: 15px; background: #2f3640; color: white; display: flex; justify-content: space-between; align-items: center;">
-            <h4 id="pickerTitle">Select Location on Map</h4>
-            <button onclick="closeMapPicker()" style="background:#ff4757; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">Done ✓</button>
+            <h4 id="pickerTitle">Drag Pin to Select Location</h4>
+            <button onclick="confirmLocation()" style="background:#ff4757; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm Location ✓</button>
         </div>
         <div id="pickerMap"></div>
+        <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; background: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 12px; font-weight: bold; color: #2f3640;">
+            📍 Pin point select karein (Map ko move karein)
+        </div>
     </div>
 
     <!-- Leaflet JS -->
@@ -321,42 +362,61 @@
         let currentPickerType = '';
         let selectedFare = 50;
         let selectedVehicle = 'Bike';
+        let currentSelectedLat = 22.7196;
+        let currentSelectedLng = 75.8577;
 
         window.onload = function() {
-            // Main Map Init (Indore default)
             map = L.map('map', {zoomControl: false}).setView([22.7196, 75.8577], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
         };
 
-        // AUTH & PROFILE FUNCTIONS
+        // AUTH & PROFILE
         function sendOtp() {
             const phone = document.getElementById('userPhone').value;
             if(phone.length < 10) { alert('Enter valid 10-digit mobile number!'); return; }
             document.getElementById('stepMobile').style.display = 'none';
             document.getElementById('stepOtp').style.display = 'block';
         }
-
         function verifyOtp() {
-            const otp = document.getElementById('otpInput').value;
-            if(!otp) { alert('Please enter OTP!'); return; }
             document.getElementById('stepOtp').style.display = 'none';
             document.getElementById('stepProfile').style.display = 'block';
         }
-
         function saveProfile() {
             const name = document.getElementById('userName').value;
             const phone = document.getElementById('userPhone').value;
-            if(!name) { alert('Please enter your full name!'); return; }
+            const email = document.getElementById('userEmail').value;
+            if(!name) { alert('Enter your full name!'); return; }
             
             document.getElementById('drawerName').innerText = name;
             document.getElementById('drawerPhone').innerText = '+91 ' + phone;
             document.getElementById('drawerDp').innerText = name.substring(0, 2).toUpperCase();
             
-            // Hide Auth Screen Completely
+            document.getElementById('editName').value = name;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editPhone').value = phone;
+
             document.getElementById('authScreen').style.display = 'none';
-            
-            // Refresh map view to ensure rendering
             if(map) map.invalidateSize();
+        }
+
+        function openEditProfile() {
+            closeDrawer();
+            document.getElementById('editProfileModal').style.display = 'flex';
+        }
+        function closeEditProfile() {
+            document.getElementById('editProfileModal').style.display = 'none';
+        }
+        function updateProfileData() {
+            const name = document.getElementById('editName').value;
+            const phone = document.getElementById('editPhone').value;
+            const email = document.getElementById('editEmail').value;
+            if(!name) { alert('Name cannot be empty!'); return; }
+
+            document.getElementById('drawerName').innerText = name;
+            document.getElementById('drawerPhone').innerText = '+91 ' + phone;
+            document.getElementById('drawerDp').innerText = name.substring(0, 2).toUpperCase();
+            closeEditProfile();
+            alert('Profile updated successfully! ✓');
         }
 
         function logout() { location.reload(); }
@@ -371,7 +431,7 @@
             document.getElementById('drawerOverlay').style.display = 'none';
         }
 
-        // MAP PICKER LOGIC
+        // DRAGGABLE MAP PICKER
         function openMapPicker(type) {
             currentPickerType = type;
             document.getElementById('pickerTitle').innerText = type === 'pickup' ? 'Select Pickup Location' : 'Select Drop Location';
@@ -379,28 +439,35 @@
 
             setTimeout(() => {
                 if (!pickerMap) {
-                    pickerMap = L.map('pickerMap').setView([22.7196, 75.8577], 15);
+                    pickerMap = L.map('pickerMap', {zoomControl: false}).setView([22.7196, 75.8577], 15);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(pickerMap);
-                    
-                    pickerMap.on('click', function(e) {
-                        const lat = e.latlng.lat;
-                        const lng = e.latlng.lng;
-                        if (pickerMarker) pickerMap.removeLayer(pickerMarker);
-                        pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
 
-                        if(currentPickerType === 'pickup') {
-                            document.getElementById('pickAddress').value = `Indore (Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)})`;
-                        } else {
-                            document.getElementById('dropAddress').value = `Indore (Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)})`;
-                        }
+                    // Center Draggable Marker (Uber Style)
+                    pickerMarker = L.marker(pickerMap.getCenter(), {draggable: true}).addTo(pickerMap);
+
+                    pickerMap.on('move', function() {
+                        pickerMarker.setLatLng(pickerMap.getCenter());
+                    });
+
+                    pickerMap.on('moveend', function() {
+                        const center = pickerMap.getCenter();
+                        currentSelectedLat = center.lat;
+                        currentSelectedLng = center.lng;
                     });
                 } else {
                     pickerMap.invalidateSize();
+                    pickerMap.setView([22.7196, 75.8577], 15);
                 }
             }, 300);
         }
 
-        function closeMapPicker() {
+        function confirmLocation() {
+            const locText = `Location (${currentSelectedLat.toFixed(3)}, ${currentSelectedLng.toFixed(3)})`;
+            if(currentPickerType === 'pickup') {
+                document.getElementById('pickAddress').value = locText;
+            } else {
+                document.getElementById('dropAddress').value = locText;
+            }
             document.getElementById('mapPickerModal').style.display = 'none';
         }
 
