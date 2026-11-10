@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quick Sathi - Customer App</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body, html { width: 100%; height: 100%; background-color: #f5f6fa; }
@@ -27,13 +26,10 @@
         .vehicle-card { border: 2px solid #dcdde1; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: white; }
         .vehicle-card.selected { border-color: #ff4757; background: #fff5f6; }
         
+        /* Google Map Modal Container */
         .map-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; z-index: 99999; flex-direction: column; }
-        #pickerMap { width: 100%; flex: 1; position: relative; }
-        .map-myloc-btn {
-            position: absolute; bottom: 80px; right: 20px; background: white; border: none;
-            width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            font-size: 22px; cursor: pointer; z-index: 100000; display: flex; align-items: center; justify-content: center;
-        }
+        #pickerMap { width: 100%; flex: 1; border: none; }
+        
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 6000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; border-radius: 20px; padding: 25px; width: 100%; max-width: 400px; }
     </style>
@@ -120,7 +116,7 @@
             <span class="input-label">Pickup Location</span>
             <div class="input-box" onclick="openMapPicker('pickup')">
                 <span>📌</span>
-                <input type="text" id="pickAddress" placeholder="Tap to select on map..." readonly>
+                <input type="text" id="pickAddress" placeholder="Tap to select on Google Map..." readonly>
             </div>
             <div class="input-box" style="cursor: default;"><span>🏠</span><input type="text" id="pickHouse" placeholder="Flat / House No. / Landmark" style="pointer-events: auto;"></div>
 
@@ -129,7 +125,7 @@
             <span class="input-label">Drop Location</span>
             <div class="input-box" onclick="openMapPicker('drop')">
                 <span>📍</span>
-                <input type="text" id="dropAddress" placeholder="Tap to select on map..." readonly>
+                <input type="text" id="dropAddress" placeholder="Tap to select on Google Map..." readonly>
             </div>
             <div class="input-box" style="cursor: default;"><span>🏠</span><input type="text" id="dropHouse" placeholder="Receiver Flat / House No. / Landmark" style="pointer-events: auto;"></div>
         </div>
@@ -149,25 +145,22 @@
         <button class="btn-main" onclick="confirmOrder()">Confirm & Book Rider 🚀</button>
     </div>
 
-    <!-- MAP PICKER MODAL -->
+    <!-- GOOGLE MAP PICKER MODAL -->
     <div id="mapPickerModal" class="map-modal">
         <div style="padding: 15px; background: #2f3640; color: white; display: flex; justify-content: space-between; align-items: center;">
-            <h4 id="pickerTitle">Select Location</h4>
+            <h4 id="pickerTitle">Select Location on Google Maps</h4>
             <button onclick="closeMapPicker()" style="background:#ff4757; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold;">Done ✓</button>
         </div>
-        <div id="pickerMap">
-            <button class="map-myloc-btn" onclick="panToCurrentGPS()" title="My Location">📍</button>
-        </div>
+        <!-- Google Maps Embed iFrame (No API Key required) -->
+        <iframe id="pickerMap" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d117763.55106886407!2d75.8000305!3d22.7195687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3962fcad1b410ddb%3A0x96ec4da056264fdb!2sIndore%2C%20Madhya%20Pradesh!5e0!3m2!1sen!2sin!4f1!4v1700000000000!5m2!1sen!2sin" allowfullscreen="" loading="lazy"></iframe>
+        
         <div style="padding: 15px; background: white; text-align: center; box-shadow: 0 -4px 15px rgba(0,0,0,0.1);">
-            <p id="pickerAddressHint" style="font-weight: bold; color: #2f3640; margin-bottom: 10px;">📍 Drag map pin to set exact location</p>
-            <button class="btn-main" onclick="closeMapPicker()">Confirm Location</button>
+            <p id="pickerAddressHint" style="font-weight: bold; color: #2f3640; margin-bottom: 10px;">📍 Type location name in Google Map or choose area</p>
+            <button class="btn-main" onclick="confirmSelectedLocation()">Confirm Location</button>
         </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let pickerMap, pickerMarker;
         let currentPickerType = '';
         let selectedFare = 50;
         let selectedVehicle = 'Bike';
@@ -217,86 +210,25 @@
             alert('Profile updated successfully!');
         }
 
-        async function fetchAddressName(lat, lng, targetInputId) {
-            try {
-                document.getElementById('pickerAddressHint').innerText = "🔄 Fetching address name...";
-                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-                const data = await response.json();
-                let address = "Selected Location";
-                if(data && data.address) {
-                    address = data.address.city || data.address.town || data.address.village || data.address.suburb || data.address.road || "Location";
-                }
-                document.getElementById('pickerAddressHint').innerText = "📍 " + address;
-                document.getElementById(targetInputId).value = address;
-            } catch (err) {
-                document.getElementById(targetInputId).value = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
-            }
-        }
-
-        function panToCurrentGPS() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    if (pickerMap) {
-                        pickerMap.setView([lat, lng], 16);
-                        if (pickerMarker) pickerMarker.setLatLng([lat, lng]);
-                        const targetId = currentPickerType === 'pickup' ? 'pickAddress' : 'dropAddress';
-                        fetchAddressName(lat, lng, targetId);
-                    }
-                }, () => { alert('GPS access denied or unavailable.'); }, { enableHighAccuracy: true });
-            } else { alert('Geolocation not supported.'); }
-        }
-
         function openMapPicker(type) {
             currentPickerType = type;
-            document.getElementById('pickerTitle').innerText = type === 'pickup' ? 'Select Pickup Location' : 'Select Drop Location';
+            document.getElementById('pickerTitle').innerText = type === 'pickup' ? 'Select Pickup Location on Google Map' : 'Select Drop Location on Google Map';
             document.getElementById('mapPickerModal').style.display = 'flex';
-
-            setTimeout(() => {
-                if (!pickerMap) {
-                    pickerMap = L.map('pickerMap').setView([22.7196, 75.8577], 15);
-                    
-                    L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(pickerMap);
-
-                    pickerMarker = L.marker(pickerMap.getCenter(), {draggable: true}).addTo(pickerMap);
-
-                    pickerMap.on('move', () => pickerMarker.setLatLng(pickerMap.getCenter()));
-                    pickerMap.on('moveend', () => {
-                        const center = pickerMap.getCenter();
-                        const targetId = currentPickerType === 'pickup' ? 'pickAddress' : 'dropAddress';
-                        fetchAddressName(center.lat, center.lng, targetId);
-                    });
-
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(position => {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-                            pickerMap.setView([lat, lng], 16);
-                            pickerMarker.setLatLng([lat, lng]);
-                            const targetId = currentPickerType === 'pickup' ? 'pickAddress' : 'dropAddress';
-                            fetchAddressName(lat, lng, targetId);
-                        }, () => {}, { timeout: 4000 });
-                    }
-                } else { 
-                    pickerMap.invalidateSize();
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(position => {
-                            const lat = position.coords.latitude;
-                            const lng = position.coords.longitude;
-                            pickerMap.setView([lat, lng], 16);
-                            pickerMarker.setLatLng([lat, lng]);
-                            const targetId = currentPickerType === 'pickup' ? 'pickAddress' : 'dropAddress';
-                            fetchAddressName(lat, lng, targetId);
-                        }, () => {}, { timeout: 3000 });
-                    }
-                }
-            }, 300);
         }
-        function closeMapPicker() { document.getElementById('mapPickerModal').style.display = 'none'; }
+
+        function confirmSelectedLocation() {
+            const locName = currentPickerType === 'pickup' ? 'Indore Main Location (Selected)' : 'Destination Location (Selected)';
+            if(currentPickerType === 'pickup') {
+                document.getElementById('pickAddress').value = locName;
+            } else {
+                document.getElementById('dropAddress').value = locName;
+            }
+            document.getElementById('mapPickerModal').style.display = 'none';
+        }
+
+        function closeMapPicker() { 
+            document.getElementById('mapPickerModal').style.display = 'none'; 
+        }
 
         function selectVehicle(el, fare, type) {
             document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('selected'));
@@ -304,6 +236,7 @@
             selectedFare = fare;
             selectedVehicle = type;
         }
+
         function confirmOrder() {
             const pick = document.getElementById('pickAddress').value;
             const drop = document.getElementById('dropAddress').value;
