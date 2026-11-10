@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Sathi - Delivery App</title>
-    <!-- Leaflet CSS -->
+    <title>Quick Sathi - Customer App</title>
+    <!-- Leaflet CSS for Live Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --primary: #ff4757;
+            --secondary: #2f3640;
             --bg-color: #f5f6fa;
             --card-bg: #ffffff;
             --text-color: #333;
@@ -45,10 +46,6 @@
             font-size: 22px;
             margin-bottom: 4px;
         }
-        header p {
-            font-size: 13px;
-            opacity: 0.9;
-        }
         .nav-tabs {
             display: flex;
             background: #f1f2f6;
@@ -60,7 +57,7 @@
             flex: 1;
             padding: 10px;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             color: #718093;
@@ -77,81 +74,22 @@
             display: block;
         }
         .input-group {
-            margin-bottom: 15px;
-            position: relative;
+            margin-bottom: 12px;
         }
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 13px;
+            margin-bottom: 4px;
+            font-size: 12px;
             color: #4b6584;
         }
         input, select {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #dcdde1;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-        }
-        .gps-btn {
-            background: #2ed573;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 5px;
-            font-size: 11px;
-            cursor: pointer;
-            margin-top: 5px;
-            display: inline-block;
-        }
-        .suggestions-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #dcdde1;
-            border-radius: 0 0 8px 8px;
-            max-height: 150px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-        .suggestion-item {
             padding: 10px;
+            border: 1px solid #dcdde1;
+            border-radius: 8px;
             font-size: 13px;
-            cursor: pointer;
-            border-bottom: 1px solid #f1f2f6;
-        }
-        .suggestion-item:hover {
-            background-color: #f8f9fa;
-        }
-        /* Live Map Container */
-        .map-box {
-            width: 100%;
-            height: 150px;
-            border-radius: 8px;
-            margin-top: 6px;
-            border: 1px solid #ced6e0;
-        }
-        .fare-box {
-            background: #f1f2f6;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .fare-box span {
-            font-size: 15px;
-            font-weight: bold;
-        }
-        #totalFare {
-            color: var(--primary);
-            font-size: 18px;
+            outline: none;
         }
         .btn-main {
             width: 100%;
@@ -163,28 +101,14 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            margin-top: 10px;
         }
-        .profile-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--primary);
-        }
-        .otp-display {
-            background: #fff0f1;
-            border: 1px dashed var(--primary);
-            padding: 12px;
+        .map-box {
+            width: 100%;
+            height: 180px;
             border-radius: 8px;
-            text-align: center;
-            margin-top: 15px;
-            display: none;
-        }
-        .otp-display h3 {
-            color: var(--primary);
-            font-size: 18px;
-            letter-spacing: 2px;
-            margin-top: 4px;
+            margin-top: 10px;
+            border: 1px solid #ced6e0;
         }
     </style>
 </head>
@@ -203,77 +127,90 @@
 
     <!-- BOOK PARCEL TAB -->
     <div id="bookSection" class="section-content active">
-        
         <div class="input-group">
-            <label>📍 Pickup Location (Kahan se lana hai?)</label>
-            <input type="text" id="pickupLoc" placeholder="City ya area ka naam likhein..." oninput="showSuggestions(this.value, 'pickup')" autocomplete="off">
-            <div id="pickupSuggestions" class="suggestions-list"></div>
-            <button class="gps-btn" onclick="useCurrentLocation()">📍 Use My Current Location</button>
-            <div id="pickupMap" class="map-box"></div>
+            <label>Pickup Location (Kahan se lana hai?)</label>
+            <input type="text" id="pickupLoc" placeholder="Vijay Nagar, Indore">
         </div>
 
         <div class="input-group">
-            <label>🎯 Drop Location (Kahan bhejna hai?)</label>
-            <input type="text" id="dropLoc" placeholder="Manzil city ya area likhein..." oninput="showSuggestions(this.value, 'drop')" autocomplete="off">
-            <div id="dropSuggestions" class="suggestions-list"></div>
-            <div id="dropMap" class="map-box"></div>
+            <label>Drop Location (Kahan bhejna hai?)</label>
+            <input type="text" id="dropLoc" placeholder="Rajwada, Indore">
         </div>
 
         <div class="input-group">
-            <label>📏 Parcel ka Size & Details</label>
-            <select id="parcelSize" onchange="calculateFare()">
-                <option value="small">Small (Documents, Keys - upto 2kg)</option>
-                <option value="medium">Medium (Box, Clothes - 2 to 5kg)</option>
-                <option value="large">Large (Heavy Item / Big Box - 5kg+)</option>
+            <label>Parcel ka Size & Details</label>
+            <select id="parcelSize">
+                <option value="50">Small (Documents, Keys - upto 2kg) - ₹50</option>
+                <option value="90">Medium (Box, Clothes - upto 5kg) - ₹90</option>
+                <option value="150">Large (Heavy items - upto 10kg) - ₹150</option>
             </select>
         </div>
 
-        <div class="fare-box">
-            <span>Estimated Kiraya:</span>
-            <span id="totalFare">₹ 50</span>
-        </div>
+        <!-- Live Map Preview for Customer -->
+        <label>Live Route Preview:</label>
+        <div id="customerMap" class="map-box"></div>
 
-        <button class="btn-main" onclick="bookParcel()">Book Parcel & Get Secure OTP 🚀</button>
-
-        <div id="otpBox" class="otp-display">
-            <span style="font-size: 13px; font-weight: 600; color: #333;">🔒 Delivery Security OTP:</span>
-            <h3 id="generatedOtp">----</h3>
-            <p style="font-size: 11px; color: #666; margin-top: 4px;">Parcel deliver hote waqt delivery boy ko ye OTP batayein.</p>
-        </div>
+        <button class="btn-main" onclick="bookParcel()">Book Delivery Now 🚀</button>
     </div>
 
     <!-- PROFILE TAB -->
     <div id="profileSection" class="section-content">
-        <div class="profile-card">
-            <h3 style="margin-bottom: 10px; color: #2f3640;">👤 User Profile</h3>
-            <div class="input-group">
-                <label>Aapka Naam</label>
-                <input type="text" id="userName" placeholder="Apna pura naam likhein">
-            </div>
-            <div class="input-group">
-                <label>Mobile Number</label>
-                <input type="tel" id="userPhone" placeholder="10-digit mobile number">
-            </div>
-            <button class="btn-main" onclick="saveProfile()">Save Profile 💾</button>
+        <div style="text-align: center; padding: 20px 0;">
+            <div style="font-size: 50px; margin-bottom: 10px;">👤</div>
+            <h3 style="color: var(--secondary);">Lakhan Chouhan</h3>
+            <p style="color: #718093; font-size: 13px; margin-top: 5px;">📞 +91 9876543210</p>
+            <p style="color: #718093; font-size: 13px;">📍 Indore, Madhya Pradesh</p>
+        </div>
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 10px;">
+            <p style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">📜 Booking History</p>
+            <p style="font-size: 12px; color: #666;">Abhi tak koi purani booking nahi hai.</p>
         </div>
     </div>
 
 </div>
 
-<!-- Leaflet JS -->
+<!-- Leaflet JS for Map -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    let pMap, dMap;
-    let pMarker, dMarker;
+    let customerMap;
 
-    // Initialize Maps immediately when page loads
-    document.addEventListener("DOMContentLoaded", function() {
-        const defaultLat = 22.7196;
-        const defaultLon = 75.8577;
+    function switchTab(tabName, element) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+        
+        element.classList.add('active');
+        if(tabName === 'book') {
+            document.getElementById('bookSection').classList.add('active');
+            if(customerMap) customerMap.invalidateSize();
+        } else {
+            document.getElementById('profileSection').classList.add('active');
+        }
+    }
 
-        // Pickup Map Setup
-        pMap = L.map('pickupMap').setView([defaultLat, defaultLon], 13);
+    // Initialize Leaflet Map on load
+    window.onload = function() {
+        customerMap = L.map('customerMap').setView([22.7196, 75.8577], 13); // Indore Coordinates
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
-            
+        }).addTo(customerMap);
+
+        L.marker([22.7196, 75.8577]).addTo(customerMap)
+            .bindPopup('<b>Quick Sathi Hub</b> - Indore').openPopup();
+    };
+
+    function bookParcel() {
+        const pickup = document.getElementById('pickupLoc').value;
+        const drop = document.getElementById('dropLoc').value;
+
+        if(!pickup || !drop) {
+            alert('Kripya Pickup aur Drop location dono bharein!');
+            return;
+        }
+
+        alert('🎉 Parcel Successfully Booked! Delivery Partner jald hi aapse contact karega.');
+    }
+</script>
+
+</body>
+</html>
