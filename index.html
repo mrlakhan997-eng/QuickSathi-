@@ -97,7 +97,7 @@
             border-top-right-radius: 25px;
             padding: 20px;
             box-shadow: 0 -5px 25px rgba(0,0,0,0.15);
-            max-height: 75vh;
+            max-height: 78vh;
             overflow-y: auto;
         }
 
@@ -106,7 +106,7 @@
             border: 1px solid #dcdde1;
             border-radius: 10px;
             padding: 10px 12px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
         }
@@ -130,6 +130,23 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 10px;
+        }
+
+        .gps-btn {
+            background: #e1f5fe;
+            color: #0288d1;
+            border: 1px solid #b3e5fc;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         .vehicle-card {
@@ -161,8 +178,7 @@
             width: 100%;
             flex: 1;
         }
-        
-        /* Modal Popup for Edit Profile */
+
         .modal {
             display: none;
             position: fixed;
@@ -282,9 +298,10 @@
         <!-- PICKUP SECTION -->
         <div style="margin-bottom: 10px;">
             <label style="font-size: 11px; font-weight: bold; color: #ff4757;">PICKUP LOCATION</label>
+            <button class="gps-btn" onclick="useCurrentGPS('pickup')">📍 Use My Current Location (GPS)</button>
             <div class="input-box" onclick="openMapPicker('pickup')">
-                <span>📍</span>
-                <input type="text" id="pickAddress" placeholder="Drag Map Pin to select Pickup Location..." readonly>
+                <span>📌</span>
+                <input type="text" id="pickAddress" placeholder="Click to select on Map..." readonly>
             </div>
             <div class="input-box">
                 <span>🏠</span>
@@ -299,9 +316,10 @@
         <!-- DROP SECTION -->
         <div style="margin-bottom: 10px;">
             <label style="font-size: 11px; font-weight: bold; color: #ff4757;">DROP LOCATION</label>
+            <button class="gps-btn" onclick="useCurrentGPS('drop')" style="background:#e8f8f5; color:#27ae60; border-color:#a3e4d7;">🎯 Set Current Loc as Drop (Optional)</button>
             <div class="input-box" onclick="openMapPicker('drop')">
                 <span>🎯</span>
-                <input type="text" id="dropAddress" placeholder="Drag Map Pin to select Drop Location..." readonly>
+                <input type="text" id="dropAddress" placeholder="Click to select on Map..." readonly>
             </div>
             <div class="input-box">
                 <span>🏠</span>
@@ -347,11 +365,11 @@
     <div id="mapPickerModal" class="map-modal">
         <div style="padding: 15px; background: #2f3640; color: white; display: flex; justify-content: space-between; align-items: center;">
             <h4 id="pickerTitle">Drag Pin to Select Location</h4>
-            <button onclick="confirmLocation()" style="background:#ff4757; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm Location ✓</button>
+            <button onclick="confirmLocation()" style="background:#ff4757; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">Confirm ✓</button>
         </div>
         <div id="pickerMap"></div>
-        <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; background: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 12px; font-weight: bold; color: #2f3640;">
-            📍 Pin point select karein (Map ko move karein)
+        <div style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; background: white; padding: 8px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 12px; font-weight: bold; color: #2f3640;" id="pickerAddressHint">
+            📍 Map ko move karein, address auto-detect hoga
         </div>
     </div>
 
@@ -364,6 +382,7 @@
         let selectedVehicle = 'Bike';
         let currentSelectedLat = 22.7196;
         let currentSelectedLng = 75.8577;
+        let finalSelectedAddress = '';
 
         window.onload = function() {
             map = L.map('map', {zoomControl: false}).setView([22.7196, 75.8577], 13);
@@ -431,60 +450,42 @@
             document.getElementById('drawerOverlay').style.display = 'none';
         }
 
-        // DRAGGABLE MAP PICKER
-        function openMapPicker(type) {
-            currentPickerType = type;
-            document.getElementById('pickerTitle').innerText = type === 'pickup' ? 'Select Pickup Location' : 'Select Drop Location';
-            document.getElementById('mapPickerModal').style.display = 'flex';
-
-            setTimeout(() => {
-                if (!pickerMap) {
-                    pickerMap = L.map('pickerMap', {zoomControl: false}).setView([22.7196, 75.8577], 15);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(pickerMap);
-
-                    // Center Draggable Marker (Uber Style)
-                    pickerMarker = L.marker(pickerMap.getCenter(), {draggable: true}).addTo(pickerMap);
-
-                    pickerMap.on('move', function() {
-                        pickerMarker.setLatLng(pickerMap.getCenter());
-                    });
-
-                    pickerMap.on('moveend', function() {
-                        const center = pickerMap.getCenter();
-                        currentSelectedLat = center.lat;
-                        currentSelectedLng = center.lng;
-                    });
+        // FETCH REAL ADDRESS NAME USING OPENSTREETMAP REVERSE GEOCODING
+        async function fetchAddressName(lat, lng, targetInputId) {
+            try {
+                document.getElementById('pickerAddressHint').innerText = "🔄 Fetching address name...";
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                const data = await response.json();
+                if(data && data.display_name) {
+                    // Shorten the display name for clean look
+                    const parts = data.display_name.split(',');
+                    finalSelectedAddress = parts.slice(0, 3).join(',');
                 } else {
-                    pickerMap.invalidateSize();
-                    pickerMap.setView([22.7196, 75.8577], 15);
+                    finalSelectedAddress = `Lat: ${lat.toFixed(3)}, Lng: ${lng.toFixed(3)}`;
                 }
-            }, 300);
-        }
-
-        function confirmLocation() {
-            const locText = `Location (${currentSelectedLat.toFixed(3)}, ${currentSelectedLng.toFixed(3)})`;
-            if(currentPickerType === 'pickup') {
-                document.getElementById('pickAddress').value = locText;
-            } else {
-                document.getElementById('dropAddress').value = locText;
+            } catch (err) {
+                finalSelectedAddress = `Location near Indore`;
             }
-            document.getElementById('mapPickerModal').style.display = 'none';
+            document.getElementById('pickerAddressHint').innerText = "📍 " + finalSelectedAddress;
+            document.getElementById(targetInputId).value = finalSelectedAddress;
         }
 
-        // VEHICLE SELECTION
-        function selectVehicle(el, fare, type) {
-            document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedFare = fare;
-            selectedVehicle = type;
+        // DIRECT GPS CURRENT LOCATION
+        function useCurrentGPS(type) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const targetId = type === 'pickup' ? 'pickAddress' : 'dropAddress';
+                    
+                    await fetchAddressName(lat, lng, targetId);
+                    map.setView([lat, lng], 16);
+                    L.marker([lat, lng]).addTo(map).bindPopup('<b>Current Location</b>').openPopup();
+                    alert('✓ Current location loaded successfully!');
+                }, () => { alert('GPS access denied or unavailable.'); });
+            } else {
+                alert('Geolocation is not supported by your browser.');
+            }
         }
 
-        function confirmOrder() {
-            const pick = document.getElementById('pickAddress').value;
-            const drop = document.getElementById('dropAddress').value;
-            if(!pick || !drop) { alert('Kripya map se Pickup aur Drop location select karein!'); return; }
-            alert('🎉 Order Placed Successfully! Searching for nearby ' + selectedVehicle + ' rider...');
-        }
-    </script>
-</body>
-</html>
+        // DRAGGA
