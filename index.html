@@ -205,10 +205,43 @@
             const rawPhone = document.getElementById('userPhone').value.trim();
             if(rawPhone.length < 10) {
                 alert('कृपया सही 10-अंकों का मोबाइल नंबर दर्ज करें!');
+    <script>
+        // Firebase Configuration (Updated from Project Settings)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCumgXqTl56mWO-YqYvf87-tddxH2ZoJns",
+            authDomain: "quicksathi-42be3.firebaseapp.com",
+            projectId: "quicksathi-42be3",
+            storageBucket: "quicksathi-42be3.firebasestorage.app",
+            messagingSenderId: "166939515183",
+            appId: "1:166939515183:web:ae3b13611cdb142835e9da"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Setup Invisible reCAPTCHA verifier
+        window.onload = function() {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('sign-in-button', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    executeSendOTP();
+                }
+            });
+            window.recaptchaVerifier.render();
+        };
+
+        let currentPickerType = '';
+        let selectedFare = 50;
+        let selectedVehicle = 'Bike';
+        let userProfile = { name: '', phone: '', email: '', dob: '' };
+        let confirmationResultGlobal = null;
+
+        function goToOtp() {
+            const rawPhone = document.getElementById('userPhone').value.trim();
+            if(rawPhone.length < 10) {
+                alert('कृपया सही 10-अंकों का मोबाइल नंबर दर्ज करें!');
                 return;
             }
-            
-            // Trigger invisible recaptcha and send OTP
             executeSendOTP();
         }
 
@@ -227,7 +260,6 @@
                 .catch((error) => {
                     console.error("OTP Error: ", error);
                     alert("OTP नहीं भेजा जा सका: " + error.message);
-                    // Reset recaptcha if failed
                     if(window.recaptchaVerifier) {
                         window.recaptchaVerifier.render().then(widgetId => grecaptcha.reset(widgetId));
                     }
@@ -247,7 +279,6 @@
             }
 
             confirmationResultGlobal.confirm(code).then((result) => {
-                // User signed in successfully.
                 const user = result.user;
                 userProfile.phone = document.getElementById('userPhone').value.trim();
                 
@@ -330,5 +361,6 @@
             alert('🎉 Order Booked for ' + selectedVehicle + '! Searching for nearby delivery partners...');
         }
     </script>
+
 </body>
 </html>
