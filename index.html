@@ -22,12 +22,11 @@
             width: 100%;
             height: 100%;
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             z-index: 1;
         }
 
-        /* Authentication Screen (OTP / Reg) */
+        /* Authentication Screen */
         .auth-screen {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -38,14 +37,14 @@
             flex-direction: column;
             justify-content: center;
         }
-        
-        /* App Layout Components */
+
+        /* Top Header Bar */
         .top-bar {
             position: absolute;
             top: 15px; left: 15px; right: 15px;
             z-index: 10;
             background: white;
-            padding: 12px 18px;
+            padding: 12px 15px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             display: flex;
@@ -53,6 +52,42 @@
             align-items: center;
         }
 
+        /* Side Drawer Menu */
+        .side-drawer {
+            position: fixed;
+            top: 0; left: -280px;
+            width: 280px; height: 100%;
+            background: white;
+            z-index: 200;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.2);
+            transition: 0.3s ease;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .side-drawer.open {
+            left: 0;
+        }
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 150;
+        }
+
+        .menu-item {
+            padding: 14px 0;
+            border-bottom: 1px solid #f1f2f6;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2f3640;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Bottom Booking Sheet */
         .bottom-sheet {
             position: absolute;
             bottom: 0; left: 0; right: 0;
@@ -62,7 +97,7 @@
             border-top-right-radius: 25px;
             padding: 20px;
             box-shadow: 0 -5px 25px rgba(0,0,0,0.15);
-            max-height: 85vh;
+            max-height: 80vh;
             overflow-y: auto;
         }
 
@@ -74,6 +109,7 @@
             margin-bottom: 10px;
             display: flex;
             align-items: center;
+            cursor: pointer;
         }
         .input-box input {
             border: none;
@@ -113,7 +149,21 @@
             background: #fff5f6;
         }
 
-        /* Modal Popups */
+        /* Map Picker Modal */
+        .map-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: white;
+            z-index: 250;
+            display: flex;
+            flex-direction: column;
+        }
+        #pickerMap {
+            width: 100%;
+            flex: 1;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -131,25 +181,14 @@
             width: 100%;
             max-width: 400px;
         }
-
-        .star-rating {
-            font-size: 30px;
-            color: #dcdde1;
-            cursor: pointer;
-            text-align: center;
-            margin: 15px 0;
-        }
-        .star-rating span.active {
-            color: #f1c40f;
-        }
     </style>
 </head>
 <body>
 
-    <!-- 1. LOGIN / REGISTRATION SCREEN (Mobile OTP + Profile Setup) -->
+    <!-- 1. LOGIN / OTP & PROFILE SETUP -->
     <div id="authScreen" class="auth-screen">
         <h2 style="color: #ff4757; margin-bottom: 8px;">Quick Sathi</h2>
-        <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Parcel Delivery Customer App</p>
+        <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Customer Delivery App</p>
 
         <div id="stepMobile">
             <div class="input-box">
@@ -160,7 +199,7 @@
         </div>
 
         <div id="stepOtp" style="display:none;">
-            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Enter 4-Digit OTP sent to your phone:</p>
+            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Enter 4-Digit OTP:</p>
             <div class="input-box">
                 <span>🔑</span>
                 <input type="text" id="otpInput" placeholder="Enter OTP (Use 1234)" maxlength="4">
@@ -169,7 +208,7 @@
         </div>
 
         <div id="stepProfile" style="display:none;">
-            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Complete your Profile:</p>
+            <p style="font-size: 12px; margin-bottom: 8px; color: #2f3640;">Create Profile:</p>
             <div class="input-box">
                 <span>👤</span>
                 <input type="text" id="userName" placeholder="Full Name">
@@ -178,40 +217,56 @@
                 <span>📧</span>
                 <input type="email" id="userEmail" placeholder="Email Address">
             </div>
-            <button class="btn-main" onclick="saveProfile()">Save & Continue 🚀</button>
+            <button class="btn-main" onclick="saveProfile()">Save & Start 🚀</button>
         </div>
     </div>
 
-    <!-- 2. MAIN APP INTERFACE -->
+    <!-- 2. SIDE DRAWER MENU -->
+    <div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+    <div id="sideDrawer" class="side-drawer">
+        <div style="display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 10px;">
+            <div style="width: 50px; height: 50px; background: #ff4757; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold;" id="drawerDp">LC</div>
+            <div>
+                <h4 id="drawerName" style="color: #2f3640; font-size: 16px;">Lakhan Chouhan</h4>
+                <p id="drawerPhone" style="color: #718093; font-size: 12px;">+91 9876543210</p>
+            </div>
+        </div>
+        <div class="menu-item" onclick="openWallet()"><span>💰 Wallet (Bal: <span id="drawerWallet">₹100</span>)</span></div>
+        <div class="menu-item" onclick="alert('Refer & Earn: Share your link and earn ₹50 on first order!')"><span>🎁 Refer and Earn</span></div>
+        <div class="menu-item" onclick="alert('Help Desk: Call us at +91 78980XXXXX or chat with support.')"><span>🎧 Help Desk / Support</span></div>
+        <div class="menu-item" onclick="alert('Settings: Notifications, Language & Privacy')"><span>⚙️ Settings</span></div>
+        <div class="menu-item" onclick="logout()" style="color: #ff4757;"><span>🚪 Logout</span></div>
+    </div>
+
+    <!-- 3. MAIN APP MAP & INTERFACE -->
     <div id="map"></div>
 
     <div class="top-bar">
-        <div>
-            <h3 style="font-size: 16px; color: #2f3640;">📦 Quick Sathi</h3>
-            <p id="displayUserName" style="font-size: 11px; color: #718093;">Welcome!</p>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button onclick="openDrawer()" style="background:none; border:none; font-size: 22px; cursor: pointer;">☰</button>
+            <div>
+                <h3 style="font-size: 15px; color: #2f3640;">📦 Quick Sathi</h3>
+            </div>
         </div>
-        <button onclick="openWallet()" style="background:#f1f2f6; border:none; padding:8px 12px; border-radius:20px; font-weight:bold; cursor:pointer;">
-            💰 Wallet: <span id="walletBal">₹0</span>
+        <button onclick="openWallet()" style="background:#f1f2f6; border:none; padding:6px 10px; border-radius:20px; font-weight:bold; cursor:pointer; font-size: 12px;">
+            💰 <span id="walletBal">₹100</span>
         </button>
     </div>
 
-    <!-- 3. BOOKING BOTTOM SHEET -->
+    <!-- 4. BOOKING BOTTOM SHEET -->
     <div class="bottom-sheet" id="bookingSheet">
-        <h4 style="margin-bottom: 10px; color: #2f3640;">Create Parcel Order</h4>
+        <h4 style="margin-bottom: 10px; color: #2f3640;">Book Parcel Delivery</h4>
 
         <!-- PICKUP SECTION -->
-        <div style="margin-bottom: 12px;">
-            <label style="font-size: 11px; font-weight: bold; color: #ff4757;">PICKUP DETAILS</label>
-            <button onclick="useGPSLocation()" style="width: 100%; margin: 4px 0 8px 0; background: #e8f8f5; border: 1px solid #2ecc71; color: #27ae60; padding: 6px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
-                📍 Use My Current GPS Location
-            </button>
-            <div class="input-box">
-                <span>🏠</span>
-                <input type="text" id="pickHouse" placeholder="Flat / House / Building / Apartment No.">
+        <div style="margin-bottom: 10px;">
+            <label style="font-size: 11px; font-weight: bold; color: #ff4757;">PICKUP LOCATION</label>
+            <div class="input-box" onclick="openMapPicker('pickup')">
+                <span>📍</span>
+                <input type="text" id="pickAddress" placeholder="Select Pickup location on Map..." readonly>
             </div>
             <div class="input-box">
-                <span>📍</span>
-                <input type="text" id="pickLandmark" placeholder="Area / Landmark / Address">
+                <span>🏠</span>
+                <input type="text" id="pickHouse" placeholder="Flat / House / Apartment No.">
             </div>
             <div class="input-box">
                 <span>📞</span>
@@ -220,15 +275,15 @@
         </div>
 
         <!-- DROP SECTION -->
-        <div style="margin-bottom: 12px;">
-            <label style="font-size: 11px; font-weight: bold; color: #ff4757;">DROP DETAILS</label>
-            <div class="input-box">
+        <div style="margin-bottom: 10px;">
+            <label style="font-size: 11px; font-weight: bold; color: #ff4757;">DROP LOCATION</label>
+            <div class="input-box" onclick="openMapPicker('drop')">
                 <span>🎯</span>
-                <input type="text" id="dropHouse" placeholder="Receiver Flat / House No.">
+                <input type="text" id="dropAddress" placeholder="Select Drop location on Map..." readonly>
             </div>
             <div class="input-box">
-                <span>📍</span>
-                <input type="text" id="dropLandmark" placeholder="Drop Address / City Area">
+                <span>🏠</span>
+                <input type="text" id="dropHouse" placeholder="Receiver Flat / House No.">
             </div>
             <div class="input-box">
                 <span>📞</span>
@@ -242,7 +297,7 @@
         <div class="vehicle-card selected" onclick="selectVehicle(this, 50, 'Bike')">
             <div>
                 <b>🛵 Bike Delivery</b>
-                <p style="font-size: 11px; color: #718093;">Up to 2kg (Documents, Keys, Small items)</p>
+                <p style="font-size: 11px; color: #718093;">Up to 2kg (Documents, Keys)</p>
             </div>
             <h4>₹ 50</h4>
         </div>
@@ -250,136 +305,114 @@
         <div class="vehicle-card" onclick="selectVehicle(this, 120, '3-Wheeler Auto')">
             <div>
                 <b>🛺 3-Wheeler Auto</b>
-                <p style="font-size: 11px; color: #718093;">Up to 10kg (Medium boxes, Bags)</p>
+                <p style="font-size: 11px; color: #718093;">Up to 10kg (Medium boxes)</p>
             </div>
             <h4>₹ 120</h4>
         </div>
 
         <div class="vehicle-card" onclick="selectVehicle(this, 250, '4-Wheeler Mini Truck')">
             <div>
-                <b>🚚 4-Wheeler Mini Truck</b>
+                <b>🚚 Mini Truck</b>
                 <p style="font-size: 11px; color: #718093;">Heavy Cargo / Bulk items</p>
             </div>
             <h4>₹ 250</h4>
         </div>
 
-        <!-- PAYMENT MODE -->
-        <label style="font-size: 11px; font-weight: bold; color: #718093; display: block; margin-top: 10px; margin-bottom: 6px;">PAYMENT METHOD</label>
-        <select id="payMode" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #dcdde1; margin-bottom: 10px;">
-            <option value="Cash">💵 Cash on Delivery (COD)</option>
-            <option value="Wallet">💰 Quick Sathi Wallet</option>
-            <option value="UPI">📲 UPI / Online</option>
-        </select>
-
-        <button class="btn-main" onclick="confirmOrder()">Confirm & Find Rider 🚀</button>
+        <button class="btn-main" onclick="confirmOrder()">Confirm & Book Rider 🚀</button>
     </div>
 
-    <!-- 4. ACTIVE ORDER & DOUBLE OTP STATUS MODAL -->
-    <div id="activeOrderModal" class="modal">
-        <div class="modal-content">
-            <h3 style="color: #27ae60; margin-bottom: 10px;">🚚 Delivery in Progress</h3>
-            <p style="font-size: 13px; color: #666;">Driver Assigned: <b>Rahul Verma</b> (🛵 MP-09-AB-1234)</p>
-            
-            <div style="background: #fff9fb; border: 1px dashed #ff4757; padding: 12px; border-radius: 8px; margin: 15px 0;">
-                <p style="font-size: 12px; color: #333;"><b>1️⃣ Pickup OTP (Show to Rider):</b> <span style="font-size: 18px; color: #ff4757; font-weight: bold;" id="pickupOtpVal">4821</span></p>
-                <hr style="margin: 8px 0; border: none; border-top: 1px solid #eee;">
-                <p style="font-size: 12px; color: #333;"><b>2️⃣ Drop OTP (Sent to Receiver):</b> <span style="font-size: 18px; color: #27ae60; font-weight: bold;" id="dropOtpVal">9104</span></p>
-            </div>
-
-            <button class="btn-main" style="background: #27ae60;" onclick="simulateDeliveryComplete()">Simulate Complete Delivery ✅</button>
+    <!-- 5. MAP PICKER MODAL (For selecting location via Map) -->
+    <div id="mapPickerModal" class="map-modal" style="display: none;">
+        <div style="padding: 15px; background: #2f3640; color: white; display: flex; justify-content: space-between; align-items: center;">
+            <h4 id="pickerTitle">Select Location on Map</h4>
+            <button onclick="closeMapPicker()" style="background:#ff4757; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Done ✓</button>
         </div>
+        <div id="pickerMap"></div>
     </div>
 
-    <!-- 5. FEEDBACK & RATING MODAL -->
-    <div id="feedbackModal" class="modal">
-        <div class="modal-content" style="text-align: center;">
-            <h3>⭐ Rate Your Delivery</h3>
-            <p style="font-size: 12px; color: #718093; margin-top: 4px;">Delivery Partner: Rahul Verma</p>
-
-            <div class="star-rating">
-                <span onclick="setRating(1)">★</span>
-                <span onclick="setRating(2)">★</span>
-                <span onclick="setRating(3)">★</span>
-                <span onclick="setRating(4)">★</span>
-                <span onclick="setRating(5)">★</span>
-            </div>
-
-            <div class="input-box">
-                <input type="text" id="feedbackComment" placeholder="Write feedback for rider (optional)">
-            </div>
-
-            <button class="btn-main" onclick="submitFeedback()">Submit Feedback</button>
-        </div>
-    </div>
-
-    <!-- 6. WALLET MODAL -->
-    <div id="walletModal" class="modal">
-        <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>💰 Customer Wallet</h3>
-                <span onclick="closeWallet()" style="cursor: pointer; font-size: 18px;">❌</span>
-            </div>
-            <div style="background: #2f3640; color: white; padding: 15px; border-radius: 10px; text-align: center;">
-                <p style="font-size: 12px; opacity: 0.8;">Available Balance</p>
-                <h2 style="color: #2ed573; margin: 5px 0;" id="modalWalletBal">₹ 0</h2>
-            </div>
-            <div class="input-box" style="margin-top: 15px;">
-                <span>₹</span>
-                <input type="number" id="addMoneyAmt" placeholder="Enter amount to add">
-            </div>
-            <button class="btn-main" style="background: #2ed573;" onclick="addMoney()">Add Money via UPI</button>
-        </div>
-    </div>
-
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let map;
+        let map, pickerMap, pickerMarker;
+        let currentPickerType = '';
         let selectedFare = 50;
         let selectedVehicle = 'Bike';
-        let walletBalance = 100; // Default wallet bonus
-        let currentRating = 5;
+        let walletBalance = 100;
+        let pickupCoords = null;
+        let dropCoords = null;
 
-        // Leaflet Map Init (Indore default)
         window.onload = function() {
+            // Main Map Init (Indore)
             map = L.map('map', {zoomControl: false}).setView([22.7196, 75.8577], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-            document.getElementById('walletBal').innerText = '₹ ' + walletBalance;
-            document.getElementById('modalWalletBal').innerText = '₹ ' + walletBalance;
         };
 
-        // AUTH & PROFILE FUNCTIONS
+        // AUTH & PROFILE
         function sendOtp() {
             const phone = document.getElementById('userPhone').value;
-            if(phone.length !== 10) { alert('Please enter 10-digit mobile number!'); return; }
+            if(phone.length !== 10) { alert('Enter 10-digit mobile number!'); return; }
             document.getElementById('stepMobile').style.display = 'none';
             document.getElementById('stepOtp').style.display = 'block';
         }
-
         function verifyOtp() {
-            const otp = document.getElementById('otpInput').value;
-            if(!otp) { alert('Enter OTP!'); return; }
             document.getElementById('stepOtp').style.display = 'none';
             document.getElementById('stepProfile').style.display = 'block';
         }
-
         function saveProfile() {
             const name = document.getElementById('userName').value;
-            if(!name) { alert('Please enter your name!'); return; }
-            document.getElementById('displayUserName').innerText = name;
+            const phone = document.getElementById('userPhone').value;
+            if(!name) { alert('Enter your name!'); return; }
+            
+            document.getElementById('drawerName').innerText = name;
+            document.getElementById('drawerPhone').innerText = '+91 ' + phone;
+            document.getElementById('drawerDp').innerText = name.substring(0, 2).toUpperCase();
             document.getElementById('authScreen').style.display = 'none';
         }
+        function logout() { location.reload(); }
 
-        // GPS LOCATION
-        function useGPSLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    map.setView([lat, lon], 16);
-                    L.marker([lat, lon]).addTo(map).bindPopup('<b>Your Current Location</b>').openPopup();
-                    document.getElementById('pickLandmark').value = "Current Location (" + lat.toFixed(4) + ", " + lon.toFixed(4) + ")";
-                }, () => { alert('GPS access denied or unavailable.'); });
-            }
+        // DRAWER CONTROLS
+        function openDrawer() {
+            document.getElementById('sideDrawer').classList.add('open');
+            document.getElementById('drawerOverlay').style.display = 'block';
+        }
+        function closeDrawer() {
+            document.getElementById('sideDrawer').classList.remove('open');
+            document.getElementById('drawerOverlay').style.display = 'none';
+        }
+
+        // MAP PICKER LOGIC
+        function openMapPicker(type) {
+            currentPickerType = type;
+            document.getElementById('pickerTitle').innerText = type === 'pickup' ? 'Select Pickup Location' : 'Select Drop Location';
+            document.getElementById('mapPickerModal').style.display = 'flex';
+
+            setTimeout(() => {
+                if (!pickerMap) {
+                    pickerMap = L.map('pickerMap').setView([22.7196, 75.8577], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(pickerMap);
+                    
+                    pickerMap.on('click', function(e) {
+                        const lat = e.latlng.lat;
+                        const lng = e.latlng.lng;
+                        if (pickerMarker) pickerMap.removeLayer(pickerMarker);
+                        pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
+
+                        if(currentPickerType === 'pickup') {
+                            pickupCoords = {lat, lng};
+                            document.getElementById('pickAddress').value = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+                        } else {
+                            dropCoords = {lat, lng};
+                            document.getElementById('dropAddress').value = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+                        }
+                    });
+                } else {
+                    pickerMap.invalidateSize();
+                }
+            }, 300);
+        }
+
+        function closeMapPicker() {
+            document.getElementById('mapPickerModal').style.display = 'none';
         }
 
         // VEHICLE SELECTION
@@ -390,58 +423,14 @@
             selectedVehicle = type;
         }
 
-        // ORDER CONFIRMATION & DOUBLE OTP
         function confirmOrder() {
-            const pickLandmark = document.getElementById('pickLandmark').value;
-            const dropLandmark = document.getElementById('dropLandmark').value;
-
-            if(!pickLandmark || !dropLandmark) {
-                alert('Kripya Pickup aur Drop dono locations bharein!');
-                return;
-            }
-
-            const pOtp = Math.floor(1000 + Math.random() * 9000);
-            const dOtp = Math.floor(1000 + Math.random() * 9000);
-
-            document.getElementById('pickupOtpVal').innerText = pOtp;
-            document.getElementById('dropOtpVal').innerText = dOtp;
-
-            document.getElementById('activeOrderModal').style.display = 'flex';
+            const pick = document.getElementById('pickAddress').value;
+            const drop = document.getElementById('dropAddress').value;
+            if(!pick || !drop) { alert('Kripya map se Pickup aur Drop location select karein!'); return; }
+            alert('🎉 Order Placed Successfully! Searching for nearby ' + selectedVehicle + ' rider...');
         }
 
-        function simulateDeliveryComplete() {
-            document.getElementById('activeOrderModal').style.display = 'none';
-            document.getElementById('feedbackModal').style.display = 'flex';
-        }
-
-        // FEEDBACK
-        function setRating(r) {
-            currentRating = r;
-            const stars = document.querySelectorAll('.star-rating span');
-            stars.forEach((s, idx) => {
-                if(idx < r) s.classList.add('active');
-                else s.classList.remove('active');
-            });
-        }
-
-        function submitFeedback() {
-            alert('🎉 Feedback Submitted! Thank you for rating Rahul Verma ' + currentRating + ' Stars.');
-            document.getElementById('feedbackModal').style.display = 'none';
-        }
-
-        // WALLET
-        function openWallet() { document.getElementById('walletModal').style.display = 'flex'; }
-        function closeWallet() { document.getElementById('walletModal').style.display = 'none'; }
-        
-        function addMoney() {
-            const amt = parseInt(document.getElementById('addMoneyAmt').value);
-            if(!amt || amt <= 0) { alert('Enter valid amount!'); return; }
-            walletBalance += amt;
-            document.getElementById('walletBal').innerText = '₹ ' + walletBalance;
-            document.getElementById('modalWalletBal').innerText = '₹ ' + walletBalance;
-            alert('₹' + amt + ' Added to Quick Sathi Wallet successfully!');
-            document.getElementById('addMoneyAmt').value = '';
-        }
+        function openWallet() { alert('Wallet Balance: ₹' + walletBalance); }
     </script>
 </body>
 </html>
