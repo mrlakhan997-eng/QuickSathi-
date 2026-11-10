@@ -52,7 +52,8 @@
                 <div style="text-align: left; font-size: 12px; font-weight: bold; color: #2f3640; margin-bottom: 5px;">Enter Mobile Number:</div>
                 <div class="input-box" style="cursor: default;">
                     <span>📱</span>
-                    <input type="tel" id="userPhone" placeholder="10-digit number" maxlength="10" style="pointer-events: auto;">
+                    <!-- maxlength को 13 कर दिया गया है ताकि +91 के साथ पूरा नंबर आ सके -->
+                    <input type="tel" id="userPhone" placeholder="+916264875125" maxlength="13" style="pointer-events: auto;">
                 </div>
                 <button class="btn-main" onclick="goToOtp()">Send OTP 🚀</button>
             </div>
@@ -202,16 +203,15 @@
 
         function goToOtp() {
             const rawPhone = document.getElementById('userPhone').value.trim();
-            if(rawPhone.length < 10) {
-                alert('कृपया सही 10-अंकों का मोबाइल नंबर दर्ज करें!');
+            if(!rawPhone.startsWith('+') || rawPhone.length < 13) {
+                alert('कृपया +91 के साथ पूरा मोबाइल नंबर दर्ज करें (जैसे: +916264875125)!');
                 return;
             }
             executeSendOTP();
         }
 
         function executeSendOTP() {
-            const rawPhone = document.getElementById('userPhone').value.trim();
-            const phoneNumber = '+91' + rawPhone;
+            const phoneNumber = document.getElementById('userPhone').value.trim();
             const appVerifier = window.recaptchaVerifier;
 
             firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
@@ -268,7 +268,7 @@
 
         function updateDrawerUI() {
             document.getElementById('drawerName').innerText = userProfile.name;
-            document.getElementById('drawerPhone').innerText = '+91 ' + userProfile.phone;
+            document.getElementById('drawerPhone').innerText = userProfile.phone;
             document.getElementById('drawerDp').innerText = userProfile.name.substring(0, 2).toUpperCase();
         }
         function openDrawer() { document.getElementById('sideDrawer').classList.add('open'); document.getElementById('drawerOverlay').style.display = 'block'; }
