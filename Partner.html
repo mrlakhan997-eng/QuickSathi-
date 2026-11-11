@@ -122,7 +122,7 @@
 
     <!-- MAIN DASHBOARD -->
     <div id="screenDashboard" class="screen" style="padding:0;">
-        <!-- Top Bar with Duty Toggle -->
+        <!-- Top Bar with Duty Toggle & Logout Button -->
         <div class="top-bar">
             <div>
                 <h4 id="dashRiderName" style="color: white;">Rider Name</h4>
@@ -134,6 +134,8 @@
                     <input type="checkbox" id="dutyToggle" onchange="toggleDuty()">
                     <span class="slider"></span>
                 </label>
+                <!-- Added Logout Button -->
+                <button onclick="logoutPartner()" style="background: #ff4757; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-left: 5px;">Logout</button>
             </div>
         </div>
 
@@ -320,6 +322,19 @@
                 statusText.style.color = '#ff4757';
                 offlineNotice.style.display = 'block';
                 onlineNotice.style.display = 'none';
+            }
+        }
+
+        // Logout Function Added
+        function logoutPartner() {
+            if(confirm("क्या आप वाकई लॉगआउट करना चाहते हैं?")) {
+                firebase.auth().signOut().then(() => {
+                    alert("सफलतापूर्वक लॉगआउट हो गए हैं!");
+                    showScreen('screenLogin');
+                }).catch((error) => {
+                    console.error("Logout Error: ", error);
+                    alert("लॉगआउट करने में समस्या आई।");
+                });
             }
         }
 
