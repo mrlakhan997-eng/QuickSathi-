@@ -18,11 +18,11 @@
         .screen.active { display: flex; flex-direction: column; }
 
         /* Card Container */
-        .card { width: 100%; max-width: 450px; margin: auto; background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
+        .card { width: 100%; max-width: 480px; margin: auto; background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
 
-        .input-label { font-size: 12px; font-weight: bold; color: #718093; margin-bottom: 4px; display: block; text-align: left; text-transform: uppercase; }
+        .input-label { font-size: 11px; font-weight: bold; color: #718093; margin-bottom: 4px; display: block; text-align: left; text-transform: uppercase; }
         .input-box { background: #f8f9fa; border: 1px solid #dcdde1; border-radius: 10px; padding: 10px 15px; margin-bottom: 12px; display: flex; align-items: center; }
-        .input-box input { border: none; background: transparent; width: 100%; outline: none; font-size: 14px; margin-left: 5px; color: #2f3640; }
+        .input-box input, .input-box select { border: none; background: transparent; width: 100%; outline: none; font-size: 14px; margin-left: 5px; color: #2f3640; }
         
         .btn-main { width: 100%; background: #ff4757; color: white; border: none; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-secondary { background: #718093; margin-top: 10px; }
@@ -32,25 +32,39 @@
 
         /* Customer Dashboard UI */
         .customer-dashboard { max-width: 500px; margin: 0 auto; padding: 20px; width: 100%; }
-        .service-card { background: white; border: 1px solid #dcdde1; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); cursor: pointer; transition: 0.2s; }
+        .service-card { background: white; border: 1px solid #dcdde1; border-radius: 15px; padding: 25px 20px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); cursor: pointer; transition: 0.2s; }
         .service-card:hover { border-color: #ff4757; transform: translateY(-2px); }
 
         /* Real Google Maps Frame */
-        .google-map-container { width: 100%; height: 220px; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 1px solid #dcdde1; }
+        .google-map-container { width: 100%; height: 180px; border-radius: 12px; overflow: hidden; margin-bottom: 12px; border: 1px solid #dcdde1; }
         .google-map-container iframe { width: 100%; height: 100%; border: 0; }
 
-        .section-title { font-size: 14px; font-weight: bold; color: #ff4757; text-align: left; margin: 15px 0 8px 0; border-bottom: 2px solid #ff4757; padding-bottom: 4px; }
+        .section-title { font-size: 13px; font-weight: bold; color: #ff4757; text-align: left; margin: 15px 0 6px 0; border-bottom: 2px solid #ff4757; padding-bottom: 3px; }
+
+        /* Side Menu Drawer */
+        .side-menu { display: none; position: fixed; top: 0; left: 0; width: 260px; height: 100%; background: white; z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.15); padding: 20px; text-align: left; }
+        .menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
+        .menu-item { padding: 12px 0; border-bottom: 1px solid #f1f2f6; font-size: 15px; font-weight: 500; color: #2f3640; cursor: pointer; }
 
         #recaptcha-container { display: flex; justify-content: center; margin: 10px 0; }
     </style>
 </head>
 <body>
 
-    <!-- STEP 1: CUSTOMER MOBILE LOGIN (10 Digit + Auto +91) -->
+    <!-- SIDE MENU DRAWER (HELP DESK & COMPLAIN) -->
+    <div id="menuOverlay" class="menu-overlay" onclick="toggleMenu()"></div>
+    <div id="sideMenu" class="side-menu">
+        <h3 style="color: #ff4757; margin-bottom: 20px;">📦 Quick Sathi Menu</h3>
+        <div class="menu-item" onclick="alert('Help Desk: For any emergency or partner issues, contact support@quicksathi.com or call 1800-QUICK-HELP')">🚨 Help Desk & Emergency</div>
+        <div class="menu-item" onclick="alert('Complain Registered: If a rider misbehaves or runs away with items, our safety team will track them using their KYC records immediately.')">⚠️ Raise Complain</div>
+        <div class="menu-item" onclick="logoutCustomer()">🚪 Logout</div>
+    </div>
+
+    <!-- STEP 1: LOGIN PAGE -->
     <div id="screenLogin" class="screen active">
         <div class="card" style="margin-top: auto; margin-bottom: auto;">
             <h2 style="color: #ff4757; margin-bottom: 5px;">📦 Quick Sathi</h2>
-            <p style="color: #718093; font-size: 13px; margin-bottom: 25px;">Customer Delivery & Booking Portal</p>
+            <p style="color: #718093; font-size: 13px; margin-bottom: 25px;">Customer Delivery Portal</p>
 
             <div id="stepMobile">
                 <span class="input-label">Enter Mobile Number</span>
@@ -75,59 +89,55 @@
         </div>
     </div>
 
-    <!-- MAIN CUSTOMER DASHBOARD -->
+    <!-- MAIN CUSTOMER DASHBOARD (NO FOOD & GROCERIES) -->
     <div id="screenDashboard" class="screen" style="padding:0;">
-        <!-- Top Bar with Logout Button -->
+        <!-- Top Bar with Menu & Logout -->
         <div class="top-bar">
-            <div>
-                <h4 style="color: white;">📦 Quick Sathi Customer</h4>
-                <p id="custPhoneDisplay" style="font-size: 12px; opacity: 0.9;">Connected</p>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button onclick="toggleMenu()" style="background: transparent; border: none; color: white; font-size: 20px; cursor: pointer;">☰</button>
+                <div>
+                    <h4 style="color: white; font-size: 16px;">📦 Quick Sathi Customer</h4>
+                    <p id="custPhoneDisplay" style="font-size: 11px; opacity: 0.9;">Connected</p>
+                </div>
             </div>
             <div>
-                <button onclick="logoutCustomer()" style="background: white; color: #ff4757; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">Logout</button>
+                <button onclick="logoutCustomer()" style="background: white; color: #ff4757; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">Logout</button>
             </div>
         </div>
 
         <div class="customer-dashboard">
-            <h3 style="color: #2f3640; margin-bottom: 15px;">What would you like to send?</h3>
+            <h3 style="color: #2f3640; margin: 20px 0 15px 0;">What would you like to send?</h3>
             
             <div class="service-card" onclick="openBookingScreen()">
-                <h4 style="color: #ff4757; font-size: 18px; margin-bottom: 5px;">🛵 Parcel Delivery</h4>
-                <p style="color: #718093; font-size: 13px;">Send documents, parcels, or boxes across the city instantly.</p>
-            </div>
-
-            <div class="service-card" onclick="alert('Food & Grocery delivery coming soon!')">
-                <h4 style="color: #ff4757; font-size: 18px; margin-bottom: 5px;">🍔 Food & Groceries</h4>
-                <p style="color: #718093; font-size: 13px;">Order food or daily essentials delivered right to your doorstep.</p>
+                <h4 style="color: #ff4757; font-size: 20px; margin-bottom: 8px;">🛵 Parcel Delivery</h4>
+                <p style="color: #718093; font-size: 13px;">Send documents, parcels, or boxes across the city instantly with live tracking & verified riders.</p>
             </div>
         </div>
     </div>
 
-    <!-- BOOKING FORM SCREEN WITH GOOGLE MAPS & DETAILED ADDRESS -->
+    <!-- BOOKING FORM SCREEN WITH MAPS & VEHICLE FARE -->
     <div id="screenBooking" class="screen" style="padding:0;">
         <div class="top-bar">
             <div>
                 <h4 style="color: white;">📍 Book Parcel Delivery</h4>
             </div>
             <div>
-                <button onclick="showScreen('screenDashboard')" style="background: white; color: #ff4757; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">Back</button>
+                <button onclick="showScreen('screenDashboard')" style="background: white; color: #ff4757; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">Back</button>
             </div>
         </div>
 
-        <div class="customer-dashboard" style="margin-top: 10px; margin-bottom: 20px;">
+        <div class="customer-dashboard" style="margin-top: 10px; margin-bottom: 25px;">
             <div class="card" style="max-width: 100%; text-align: left;">
                 
-                <!-- Real Embedded Google Map for Pinpointing -->
+                <!-- PICKUP SECTION -->
+                <div class="section-title">📌 1st Pickup Location (Sender)</div>
                 <div class="google-map-container">
-                    <iframe src="https://maps.google.com/maps?q=Indore&t=&z=13&ie=UTF8&iwloc=&output=embed" allowfullscreen="" loading="lazy"></iframe>
+                    <iframe src="https://maps.google.com/maps?q=Indore&t=&z=14&ie=UTF8&iwloc=&output=embed" allowfullscreen="" loading="lazy"></iframe>
                 </div>
-                <p style="font-size: 11px; color: #718093; text-align: center; margin-bottom: 15px;">💡 Drag map or zoom to pin your exact pickup & drop location.</p>
+                <p style="font-size: 10px; color: #718093; text-align: center; margin-bottom: 10px;">Tap map or zoom to pin exact pickup location</p>
 
-                <!-- PICKUP ADDRESS DETAILS -->
-                <div class="section-title">📌 Pickup Location Details</div>
-                
                 <span class="input-label">House / Building No.</span>
-                <div class="input-box"><span>🏠</span><input type="text" id="pickHouse" placeholder="e.g. Flat 204, Sunshine Apartments"></div>
+                <div class="input-box"><span>🏠</span><input type="text" id="pickHouse" placeholder="e.g. Flat 204, Sunshine Appt"></div>
 
                 <span class="input-label">Landmark</span>
                 <div class="input-box"><span>📍</span><input type="text" id="pickLandmark" placeholder="e.g. Near Central Mall"></div>
@@ -135,42 +145,120 @@
                 <span class="input-label">City & Pincode</span>
                 <div class="input-box"><span>🏙️</span><input type="text" id="pickCityPin" placeholder="e.g. Indore - 452001"></div>
 
+                <span class="input-label">Sender Mobile Number</span>
+                <div class="input-box"><span>📱</span><input type="tel" id="pickMobile" placeholder="Sender phone number" maxlength="10"></div>
 
-                <!-- DROP ADDRESS DETAILS -->
-                <div class="section-title">📍 Drop Location Details</div>
+
+                <!-- DROP SECTION -->
+                <div class="section-title">📍 2nd Drop Location (Receiver)</div>
+                <div class="google-map-container">
+                    <iframe src="https://maps.google.com/maps?q=Indore&t=&z=14&ie=UTF8&iwloc=&output=embed" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+                <p style="font-size: 10px; color: #718093; text-align: center; margin-bottom: 10px;">Tap map or zoom to pin exact drop location</p>
 
                 <span class="input-label">House / Building No.</span>
                 <div class="input-box"><span>🏠</span><input type="text" id="dropHouse" placeholder="e.g. Plot 15, Industrial Area"></div>
 
                 <span class="input-label">Landmark</span>
-                <div class="input-box"><span>📍</span><input type="text" id="dropLandmark" placeholder="e.g. Opp. Metro Pillar No. 12"></div>
+                <div class="input-box"><span>📍</span><input type="text" id="dropLandmark" placeholder="e.g. Opp. Metro Pillar 12"></div>
 
                 <span class="input-label">City & Pincode</span>
                 <div class="input-box"><span>🏙️</span><input type="text" id="dropCityPin" placeholder="e.g. Indore - 452010"></div>
 
+                <span class="input-label">Receiver Mobile Number</span>
+                <div class="input-box"><span>📱</span><input type="tel" id="dropMobile" placeholder="Receiver phone number" maxlength="10"></div>
 
-                <!-- ITEM DESCRIPTION -->
-                <div class="section-title">📦 Package Info</div>
-                <span class="input-label">Item Description</span>
-                <div class="input-box"><span>📦</span><input type="text" id="itemDesc" placeholder="e.g. Document / Small Box"></div>
+
+                <!-- VEHICLE & FARE SECTION -->
+                <div class="section-title">🛵 Select Vehicle & Estimate Fare</div>
+                <span class="input-label">Vehicle Type</span>
+                <div class="input-box">
+                    <span>🚚</span>
+                    <select id="vehicleType" onchange="calculateFare()">
+                        <option value="2wh">2 Wheeler (₹10/km)</option>
+                        <option value="3wh">3 Wheeler (₹25/km)</option>
+                        <option value="mini">Mini Truck (₹50/km)</option>
+                        <option value="truck">Truck (₹250/km)</option>
+                    </select>
+                </div>
+
+                <span class="input-label">Estimated Distance (in km)</span>
+                <div class="input-box"><span>📏</span><input type="number" id="distanceKm" value="5" min="1" oninput="calculateFare()"></div>
+
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; font-weight: bold; color: #2f3640;">Total Estimated Fare:</span>
+                    <span style="font-size: 18px; font-weight: bold; color: #ff4757;">₹ <span id="displayFare">50</span></span>
+                </div>
 
                 <button class="btn-main" onclick="confirmBooking()">Find Quick Sathi Partner 🚀</button>
             </div>
         </div>
     </div>
 
-    <!-- SEARCHING RIDER / ACTIVE STATUS SCREEN -->
+    <!-- SEARCHING RIDER / ACTIVE ORDER SCREEN -->
     <div id="screenSearching" class="screen">
         <div class="card" style="margin-top: auto; margin-bottom: auto;">
             <h3 style="color: #ff4757; margin-bottom: 10px;">🔍 Searching Nearby Partner...</h3>
-            <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Please wait while we assign a verified delivery rider for your parcel.</p>
+            <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Assigning verified delivery rider...</p>
             
             <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: left; margin-bottom: 15px;">
-                <p style="font-size: 13px;"><b>Pickup:</b> <span id="searchPick">--</span></p>
-                <p style="font-size: 13px; margin-top: 5px;"><b>Drop:</b> <span id="searchDrop">--</span></p>
+                <p style="font-size: 13px;"><b>Customer OTP (Default):</b> <span id="customerDefaultOtp" style="color: #ff4757; font-weight: bold;">7892</span></p>
+                <p style="font-size: 11px; color: #718093; margin-top: 3px;">(Share this OTP with rider during pickup)</p>
             </div>
 
             <button class="btn-main btn-secondary" onclick="showScreen('screenDashboard')">Cancel Booking</button>
+        </div>
+    </div>
+
+    <!-- RIDER ASSIGNED & LIVE TRACKING SCREEN -->
+    <div id="screenLiveOrder" class="screen">
+        <div class="card" style="margin-top: auto; margin-bottom: auto; text-align: left;">
+            <h3 style="color: #2ed573; margin-bottom: 15px; text-align: center;">🎉 Rider Assigned!</h3>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
+                <div style="width: 50px; height: 50px; background: #dfe4ea; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px;">👤</div>
+                <div>
+                    <h4 id="riderName" style="color: #2f3640;">Rahul Verma</h4>
+                    <p id="riderPhone" style="font-size: 13px; color: #718093;">📱 98260XXXXX</p>
+                    <p style="font-size: 11px; color: #2ed573; font-weight: bold;">Verified KYC Partner ✅</p>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; text-align: center;">
+                <a id="callRiderBtn" href="tel:9826000000" style="display: inline-block; background: #2ed573; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">📞 Call Rider</a>
+            </div>
+
+            <div style="background: #fff3cd; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; color: #856404;">
+                <b>Pickup OTP:</b> <span id="activePickupOtp">7892</span> <br>
+                <b>Drop OTP (Receiver):</b> <span id="activeDropOtp">5614</span>
+            </div>
+
+            <button class="btn-main" onclick="simulateDeliveryComplete()" style="background: #2ed573;">Simulate Delivery Completed ✅</button>
+        </div>
+    </div>
+
+    <!-- FEEDBACK & RATING SCREEN -->
+    <div id="screenFeedback" class="screen">
+        <div class="card" style="margin-top: auto; margin-bottom: auto;">
+            <h3 style="color: #ff4757; margin-bottom: 5px;">⭐ Delivery Successful!</h3>
+            <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">How was your experience with the rider?</p>
+
+            <span class="input-label">Rate Driver / Rider (1 to 5 Stars)</span>
+            <div class="input-box">
+                <span>⭐</span>
+                <select id="riderRating">
+                    <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                    <option value="4">⭐⭐⭐⭐ (4 - Good)</option>
+                    <option value="3">⭐⭐⭐ (3 - Average)</option>
+                    <option value="2">⭐⭐ (2 - Poor)</option>
+                    <option value="1">⭐ (1 - Very Bad)</option>
+                </select>
+            </div>
+
+            <span class="input-label">Feedback / Comments</span>
+            <div class="input-box"><span>📝</span><input type="text" id="riderFeedbackText" placeholder="e.g. Polite driver, timely delivery"></div>
+
+            <button class="btn-main" onclick="submitFeedback()">Submit Feedback 📤</button>
         </div>
     </div>
 
@@ -214,6 +302,18 @@
             document.getElementById(screenId).classList.add('active');
         }
 
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('menuOverlay');
+            if(menu.style.display === 'block') {
+                menu.style.display = 'none';
+                overlay.style.display = 'none';
+            } else {
+                menu.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+        }
+
         function sendCustomerOtp() {
             const rawPhone = document.getElementById('customerPhone').value.trim();
             if(rawPhone.length !== 10) {
@@ -227,7 +327,7 @@
             firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
                 .then((confirmationResult) => {
                     confirmationResultGlobal = confirmationResult;
-                    alert("OTP sent to your registered mobile number"); // Updated clean message
+                    alert("OTP sent to your registered mobile number");
                     document.getElementById('stepMobile').style.display = 'none';
                     document.getElementById('stepOtp').style.display = 'block';
                 })
@@ -265,38 +365,60 @@
             document.getElementById('pickHouse').value = '';
             document.getElementById('pickLandmark').value = '';
             document.getElementById('pickCityPin').value = '';
+            document.getElementById('pickMobile').value = '';
             document.getElementById('dropHouse').value = '';
             document.getElementById('dropLandmark').value = '';
             document.getElementById('dropCityPin').value = '';
-            document.getElementById('itemDesc').value = '';
+            document.getElementById('dropMobile').value = '';
+            calculateFare();
             showScreen('screenBooking');
+        }
+
+        function calculateFare() {
+            const vehicle = document.getElementById('vehicleType').value;
+            const km = parseFloat(document.getElementById('distanceKm').value) || 1;
+            let ratePerKm = 10;
+
+            if(vehicle === '2wh') ratePerKm = 10;
+            else if(vehicle === '3wh') ratePerKm = 25;
+            else if(vehicle === 'mini') ratePerKm = 50;
+            else if(vehicle === 'truck') ratePerKm = 250;
+
+            const total = ratePerKm * km;
+            document.getElementById('displayFare').innerText = total;
         }
 
         function confirmBooking() {
             const pickHouse = document.getElementById('pickHouse').value.trim();
             const pickLandmark = document.getElementById('pickLandmark').value.trim();
             const pickCityPin = document.getElementById('pickCityPin').value.trim();
+            const pickMobile = document.getElementById('pickMobile').value.trim();
             
             const dropHouse = document.getElementById('dropHouse').value.trim();
             const dropLandmark = document.getElementById('dropLandmark').value.trim();
             const dropCityPin = document.getElementById('dropCityPin').value.trim();
+            const dropMobile = document.getElementById('dropMobile').value.trim();
 
-            if(!pickHouse || !pickLandmark || !pickCityPin || !dropHouse || !dropLandmark || !dropCityPin) {
-                alert('कृपया पिकअप और ड्रॉप दोनों के सभी विवरण (House No, Landmark, City & Pincode) भरें!');
+            if(!pickHouse || !pickLandmark || !pickCityPin || !pickMobile || !dropHouse || !dropLandmark || !dropCityPin || !dropMobile) {
+                alert('कृपया पिकअप और ड्रॉप दोनों के सभी विवरण (House No, Landmark, City/Pin, Mobile No) भरें!');
                 return;
             }
 
-            const fullPickup = `${pickHouse}, ${pickLandmark}, ${pickCityPin}`;
-            const fullDrop = `${dropHouse}, ${dropLandmark}, ${dropCityPin}`;
-
-            document.getElementById('searchPick').innerText = fullPickup;
-            document.getElementById('searchDrop').innerText = fullDrop;
             showScreen('screenSearching');
 
-            // Simulate finding rider and generating pickup verification OTP
+            // Simulate finding rider after 3 seconds
             setTimeout(() => {
-                alert("🎉 Partner found! Your pickup verification OTP is: <b>4829</b>. Share this with the rider when they arrive to start navigation.");
-            }, 2500);
+                showScreen('screenLiveOrder');
+            }, 3000);
+        }
+
+        function simulateDeliveryComplete() {
+            showScreen('screenFeedback');
+        }
+
+        function submitFeedback() {
+            alert("🎉 धन्यवाद! आपकी रेटिंग और फीडबैक सफलतापर्वक दर्ज हो गया है।");
+            showScreen('screenDashboard');
         }
 
         function logoutCustomer() {
