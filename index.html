@@ -25,6 +25,7 @@
         .input-box input { border: none; background: transparent; width: 100%; outline: none; font-size: 14px; margin-left: 10px; color: #2f3640; }
         
         .btn-main { width: 100%; background: #ff4757; color: white; border: none; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-secondary { background: #718093; margin-top: 10px; }
         
         /* Header Top Bar */
         .top-bar { background: #ff4757; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -84,7 +85,7 @@
         <div class="customer-dashboard">
             <h3 style="color: #2f3640; margin-bottom: 15px;">What would you like to send?</h3>
             
-            <div class="service-card" onclick="alert('Parcel Delivery booking flow coming up!')">
+            <div class="service-card" onclick="openBookingScreen()">
                 <h4 style="color: #ff4757; font-size: 18px; margin-bottom: 5px;">🛵 Parcel Delivery</h4>
                 <p style="color: #718093; font-size: 13px;">Send documents, parcels, or boxes across the city instantly.</p>
             </div>
@@ -93,6 +94,26 @@
                 <h4 style="color: #ff4757; font-size: 18px; margin-bottom: 5px;">🍔 Food & Groceries</h4>
                 <p style="color: #718093; font-size: 13px;">Order food or daily essentials delivered right to your doorstep.</p>
             </div>
+        </div>
+    </div>
+
+    <!-- BOOKING FORM SCREEN -->
+    <div id="screenBooking" class="screen">
+        <div class="card" style="max-width: 480px; text-align: left;">
+            <h3 style="color: #ff4757; margin-bottom: 5px; text-align: center;">📍 Book Parcel Delivery</h3>
+            <p style="color: #718093; font-size: 13px; margin-bottom: 20px; text-align: center;">Enter pickup and drop details</p>
+
+            <span class="input-label">Pickup Location</span>
+            <div class="input-box"><span>📌</span><input type="text" id="pickupLoc" placeholder="e.g. Vijay Nagar, Indore"></div>
+
+            <span class="input-label">Drop Location</span>
+            <div class="input-box"><span>📍</span><input type="text" id="dropLoc" placeholder="e.g. Palasia, Indore"></div>
+
+            <span class="input-label">Item Description</span>
+            <div class="input-box"><span>📦</span><input type="text" id="itemDesc" placeholder="e.g. Document / Small Box"></div>
+
+            <button class="btn-main" onclick="confirmBooking()">Find Quick Sathi Partner 🚀</button>
+            <button class="btn-main btn-secondary" onclick="showScreen('screenDashboard')">Back to Dashboard</button>
         </div>
     </div>
 
@@ -179,6 +200,25 @@
                 console.error("Verification Error: ", error);
                 alert("गलत OTP, कृपया पुनः प्रयास करें।");
             });
+        }
+
+        // Open Booking Screen
+        function openBookingScreen() {
+            showScreen('screenBooking');
+        }
+
+        // Confirm Booking Trigger
+        function confirmBooking() {
+            const pickup = document.getElementById('pickupLoc').value.trim();
+            const drop = document.getElementById('dropLoc').value.trim();
+
+            if(!pickup || !drop) {
+                alert('कृपया पिकअप और ड्रॉप लोकेशन दोनों दर्ज करें!');
+                return;
+            }
+
+            alert("🎉 बुकिंग सफल! नज़दीकी डिलीवरी पार्टनर की तलाश की जा रही है...");
+            showScreen('screenDashboard');
         }
 
         // Logout Function for Customer
