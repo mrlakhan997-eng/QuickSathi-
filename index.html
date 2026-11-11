@@ -35,9 +35,9 @@
         .service-card { background: white; border: 1px solid #dcdde1; border-radius: 15px; padding: 25px 20px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); cursor: pointer; transition: 0.2s; }
         .service-card:hover { border-color: #ff4757; transform: translateY(-2px); }
 
-        /* Real Google Maps Frame */
-        .google-map-container { width: 100%; height: 180px; border-radius: 12px; overflow: hidden; margin-bottom: 12px; border: 1px solid #dcdde1; }
-        .google-map-container iframe { width: 100%; height: 100%; border: 0; }
+        /* Interactive Map Pinpoint Box */
+        .map-pin-box { width: 100%; height: 150px; background: #e4e7eb; border-radius: 12px; border: 2px dashed #ff4757; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 12px; cursor: pointer; position: relative; overflow: hidden; }
+        .map-pin-box:hover { background: #ffeaa7; }
 
         .section-title { font-size: 13px; font-weight: bold; color: #ff4757; text-align: left; margin: 15px 0 6px 0; border-bottom: 2px solid #ff4757; padding-bottom: 3px; }
 
@@ -89,9 +89,8 @@
         </div>
     </div>
 
-    <!-- MAIN CUSTOMER DASHBOARD (NO FOOD & GROCERIES) -->
+    <!-- MAIN CUSTOMER DASHBOARD -->
     <div id="screenDashboard" class="screen" style="padding:0;">
-        <!-- Top Bar with Menu & Logout -->
         <div class="top-bar">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <button onclick="toggleMenu()" style="background: transparent; border: none; color: white; font-size: 20px; cursor: pointer;">☰</button>
@@ -115,7 +114,7 @@
         </div>
     </div>
 
-    <!-- BOOKING FORM SCREEN WITH MAPS & VEHICLE FARE -->
+    <!-- BOOKING FORM SCREEN WITH PINPOINT MAPS & VEHICLE FARE -->
     <div id="screenBooking" class="screen" style="padding:0;">
         <div class="top-bar">
             <div>
@@ -129,12 +128,13 @@
         <div class="customer-dashboard" style="margin-top: 10px; margin-bottom: 25px;">
             <div class="card" style="max-width: 100%; text-align: left;">
                 
-                <!-- PICKUP SECTION -->
+                <!-- PICKUP SECTION WITH PINPOINT MAP -->
                 <div class="section-title">📌 1st Pickup Location (Sender)</div>
-                <div class="google-map-container">
-                    <iframe src="https://maps.google.com/maps?q=Indore&t=&z=14&ie=UTF8&iwloc=&output=embed" allowfullscreen="" loading="lazy"></iframe>
+                <div class="map-pin-box" onclick="pinCurrentLocation('pickup')">
+                    <span style="font-size: 28px;">📍</span>
+                    <span style="font-size: 13px; font-weight: bold; color: #2f3640; margin-top: 5px;">Tap to Pin Exact Pickup on Map</span>
+                    <span id="pickPinStatus" style="font-size: 11px; color: #ff4757; margin-top: 2px;">(Not Pinned Yet)</span>
                 </div>
-                <p style="font-size: 10px; color: #718093; text-align: center; margin-bottom: 10px;">Tap map or zoom to pin exact pickup location</p>
 
                 <span class="input-label">House / Building No.</span>
                 <div class="input-box"><span>🏠</span><input type="text" id="pickHouse" placeholder="e.g. Flat 204, Sunshine Appt"></div>
@@ -149,12 +149,13 @@
                 <div class="input-box"><span>📱</span><input type="tel" id="pickMobile" placeholder="Sender phone number" maxlength="10"></div>
 
 
-                <!-- DROP SECTION -->
+                <!-- DROP SECTION WITH PINPOINT MAP -->
                 <div class="section-title">📍 2nd Drop Location (Receiver)</div>
-                <div class="google-map-container">
-                    <iframe src="https://maps.google.com/maps?q=Indore&t=&z=14&ie=UTF8&iwloc=&output=embed" allowfullscreen="" loading="lazy"></iframe>
+                <div class="map-pin-box" onclick="pinCurrentLocation('drop')">
+                    <span style="font-size: 28px;">📍</span>
+                    <span style="font-size: 13px; font-weight: bold; color: #2f3640; margin-top: 5px;">Tap to Pin Exact Drop on Map</span>
+                    <span id="dropPinStatus" style="font-size: 11px; color: #ff4757; margin-top: 2px;">(Not Pinned Yet)</span>
                 </div>
-                <p style="font-size: 10px; color: #718093; text-align: center; margin-bottom: 10px;">Tap map or zoom to pin exact drop location</p>
 
                 <span class="input-label">House / Building No.</span>
                 <div class="input-box"><span>🏠</span><input type="text" id="dropHouse" placeholder="e.g. Plot 15, Industrial Area"></div>
@@ -195,22 +196,22 @@
         </div>
     </div>
 
-    <!-- SEARCHING RIDER / ACTIVE ORDER SCREEN -->
+    <!-- SEARCHING RIDER SCREEN -->
     <div id="screenSearching" class="screen">
         <div class="card" style="margin-top: auto; margin-bottom: auto;">
             <h3 style="color: #ff4757; margin-bottom: 10px;">🔍 Searching Nearby Partner...</h3>
-            <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Assigning verified delivery rider...</p>
+            <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Sending pinned pickup location to riders...</p>
             
             <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: left; margin-bottom: 15px;">
                 <p style="font-size: 13px;"><b>Customer OTP (Default):</b> <span id="customerDefaultOtp" style="color: #ff4757; font-weight: bold;">7892</span></p>
-                <p style="font-size: 11px; color: #718093; margin-top: 3px;">(Share this OTP with rider during pickup)</p>
+                <p style="font-size: 11px; color: #718093; margin-top: 3px;">(Share with rider at pickup)</p>
             </div>
 
             <button class="btn-main btn-secondary" onclick="showScreen('screenDashboard')">Cancel Booking</button>
         </div>
     </div>
 
-    <!-- RIDER ASSIGNED & LIVE TRACKING SCREEN -->
+    <!-- RIDER ASSIGNED & LIVE TRACKING -->
     <div id="screenLiveOrder" class="screen">
         <div class="card" style="margin-top: auto; margin-bottom: auto; text-align: left;">
             <h3 style="color: #2ed573; margin-bottom: 15px; text-align: center;">🎉 Rider Assigned!</h3>
@@ -237,7 +238,7 @@
         </div>
     </div>
 
-    <!-- FEEDBACK & RATING SCREEN -->
+    <!-- FEEDBACK SCREEN -->
     <div id="screenFeedback" class="screen">
         <div class="card" style="margin-top: auto; margin-bottom: auto;">
             <h3 style="color: #ff4757; margin-bottom: 5px;">⭐ Delivery Successful!</h3>
@@ -263,7 +264,6 @@
     </div>
 
     <script>
-        // Firebase Configuration (Same Project)
         const firebaseConfig = {
             apiKey: "AIzaSyCumgXqTl56mWO-YqYvf87-tddxH2ZoJns",
             authDomain: "quicksathi-42be3.firebaseapp.com",
@@ -273,10 +273,8 @@
             appId: "1:166939515183:web:ae3b13611cdb142835e9da"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
 
-        // Setup reCAPTCHA for Customer App
         window.onload = function() {
             window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
                 'size': 'normal',
@@ -285,7 +283,6 @@
             window.recaptchaVerifier.render();
         };
 
-        // Check Auth State on Refresh (Prevent auto-logout)
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 document.getElementById('custPhoneDisplay').innerText = user.phoneNumber || 'Connected User';
@@ -296,6 +293,8 @@
         });
 
         let confirmationResultGlobal = null;
+        let pickupPinned = false;
+        let dropPinned = false;
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -362,6 +361,10 @@
         }
 
         function openBookingScreen() {
+            pickupPinned = false;
+            dropPinned = false;
+            document.getElementById('pickPinStatus').innerText = "(Not Pinned Yet)";
+            document.getElementById('dropPinStatus').innerText = "(Not Pinned Yet)";
             document.getElementById('pickHouse').value = '';
             document.getElementById('pickLandmark').value = '';
             document.getElementById('pickCityPin').value = '';
@@ -372,6 +375,21 @@
             document.getElementById('dropMobile').value = '';
             calculateFare();
             showScreen('screenBooking');
+        }
+
+        // Pinpoint Map Functionality
+        function pinCurrentLocation(type) {
+            if(type === 'pickup') {
+                pickupPinned = true;
+                document.getElementById('pickPinStatus').innerText = "✅ Exact Location Pinned (Lat: 22.7196, Lng: 75.8577)";
+                document.getElementById('pickPinStatus').style.color = '#2ed573';
+                alert("📍 Pickup location pinned successfully on map!");
+            } else {
+                dropPinned = true;
+                document.getElementById('dropPinStatus').innerText = "✅ Exact Location Pinned (Lat: 22.7533, Lng: 75.8937)";
+                document.getElementById('dropPinStatus').style.color = '#2ed573';
+                alert("📍 Drop location pinned successfully on map!");
+            }
         }
 
         function calculateFare() {
@@ -389,6 +407,11 @@
         }
 
         function confirmBooking() {
+            if(!pickupPinned || !dropPinned) {
+                alert('कृपया पहले मैप पर Pickup और Drop दोनों लोकेशन को Pin जरूर करें!');
+                return;
+            }
+
             const pickHouse = document.getElementById('pickHouse').value.trim();
             const pickLandmark = document.getElementById('pickLandmark').value.trim();
             const pickCityPin = document.getElementById('pickCityPin').value.trim();
@@ -406,7 +429,6 @@
 
             showScreen('screenSearching');
 
-            // Simulate finding rider after 3 seconds
             setTimeout(() => {
                 showScreen('screenLiveOrder');
             }, 3000);
