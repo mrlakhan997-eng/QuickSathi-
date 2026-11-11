@@ -18,10 +18,10 @@
         .screen.active { display: flex; flex-direction: column; }
 
         /* Card Container */
-        .card { width: 100%; max-width: 420px; margin: auto; background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
+        .card { width: 100%; max-width: 450px; margin: auto; background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
 
-        .input-label { font-size: 12px; font-weight: bold; color: #718093; margin-bottom: 6px; display: block; text-align: left; text-transform: uppercase; }
-        .input-box { background: #f8f9fa; border: 1px solid #dcdde1; border-radius: 10px; padding: 12px 15px; margin-bottom: 15px; display: flex; align-items: center; }
+        .input-label { font-size: 12px; font-weight: bold; color: #718093; margin-bottom: 4px; display: block; text-align: left; text-transform: uppercase; }
+        .input-box { background: #f8f9fa; border: 1px solid #dcdde1; border-radius: 10px; padding: 10px 15px; margin-bottom: 12px; display: flex; align-items: center; }
         .input-box input { border: none; background: transparent; width: 100%; outline: none; font-size: 14px; margin-left: 5px; color: #2f3640; }
         
         .btn-main { width: 100%; background: #ff4757; color: white; border: none; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
@@ -35,8 +35,11 @@
         .service-card { background: white; border: 1px solid #dcdde1; border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); cursor: pointer; transition: 0.2s; }
         .service-card:hover { border-color: #ff4757; transform: translateY(-2px); }
 
-        /* Map Box Container */
-        .map-container { width: 100%; height: 160px; background: #e4e7eb; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #57606f; font-weight: bold; position: relative; overflow: hidden; border: 1px solid #dcdde1; cursor: pointer; }
+        /* Real Google Maps Frame */
+        .google-map-container { width: 100%; height: 220px; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 1px solid #dcdde1; }
+        .google-map-container iframe { width: 100%; height: 100%; border: 0; }
+
+        .section-title { font-size: 14px; font-weight: bold; color: #ff4757; text-align: left; margin: 15px 0 8px 0; border-bottom: 2px solid #ff4757; padding-bottom: 4px; }
 
         #recaptcha-container { display: flex; justify-content: center; margin: 10px 0; }
     </style>
@@ -45,7 +48,7 @@
 
     <!-- STEP 1: CUSTOMER MOBILE LOGIN (10 Digit + Auto +91) -->
     <div id="screenLogin" class="screen active">
-        <div class="card">
+        <div class="card" style="margin-top: auto; margin-bottom: auto;">
             <h2 style="color: #ff4757; margin-bottom: 5px;">📦 Quick Sathi</h2>
             <p style="color: #718093; font-size: 13px; margin-bottom: 25px;">Customer Delivery & Booking Portal</p>
 
@@ -53,7 +56,7 @@
                 <span class="input-label">Enter Mobile Number</span>
                 <div class="input-box">
                     <span>📱 +91</span>
-                    <input type="tel" id="customerPhone" placeholder="Enter 10-digit number" maxlength="10" value="">
+                    <input type="tel" id="customerPhone" placeholder="Enter 10-digit number" maxlength="10">
                 </div>
                 <button class="btn-main" onclick="sendCustomerOtp()">Send OTP 🚀</button>
             </div>
@@ -100,7 +103,7 @@
         </div>
     </div>
 
-    <!-- BOOKING FORM SCREEN WITH MAP & RIDER SEARCH -->
+    <!-- BOOKING FORM SCREEN WITH GOOGLE MAPS & DETAILED ADDRESS -->
     <div id="screenBooking" class="screen" style="padding:0;">
         <div class="top-bar">
             <div>
@@ -111,20 +114,43 @@
             </div>
         </div>
 
-        <div class="customer-dashboard" style="margin-top: 10px;">
+        <div class="customer-dashboard" style="margin-top: 10px; margin-bottom: 20px;">
             <div class="card" style="max-width: 100%; text-align: left;">
                 
-                <!-- Map Area Mockup -->
-                <div class="map-container" onclick="openMapSelector()">
-                    🗺️ Tap to Open Live Map / Pin Location
+                <!-- Real Embedded Google Map for Pinpointing -->
+                <div class="google-map-container">
+                    <iframe src="https://maps.google.com/maps?q=Indore&t=&z=13&ie=UTF8&iwloc=&output=embed" allowfullscreen="" loading="lazy"></iframe>
                 </div>
+                <p style="font-size: 11px; color: #718093; text-align: center; margin-bottom: 15px;">💡 Drag map or zoom to pin your exact pickup & drop location.</p>
 
-                <span class="input-label">Pickup Location</span>
-                <div class="input-box"><span>📌</span><input type="text" id="pickupLoc" placeholder="e.g. Vijay Nagar, Indore"></div>
+                <!-- PICKUP ADDRESS DETAILS -->
+                <div class="section-title">📌 Pickup Location Details</div>
+                
+                <span class="input-label">House / Building No.</span>
+                <div class="input-box"><span>🏠</span><input type="text" id="pickHouse" placeholder="e.g. Flat 204, Sunshine Apartments"></div>
 
-                <span class="input-label">Drop Location</span>
-                <div class="input-box"><span>📍</span><input type="text" id="dropLoc" placeholder="e.g. Palasia, Indore"></div>
+                <span class="input-label">Landmark</span>
+                <div class="input-box"><span>📍</span><input type="text" id="pickLandmark" placeholder="e.g. Near Central Mall"></div>
 
+                <span class="input-label">City & Pincode</span>
+                <div class="input-box"><span>🏙️</span><input type="text" id="pickCityPin" placeholder="e.g. Indore - 452001"></div>
+
+
+                <!-- DROP ADDRESS DETAILS -->
+                <div class="section-title">📍 Drop Location Details</div>
+
+                <span class="input-label">House / Building No.</span>
+                <div class="input-box"><span>🏠</span><input type="text" id="dropHouse" placeholder="e.g. Plot 15, Industrial Area"></div>
+
+                <span class="input-label">Landmark</span>
+                <div class="input-box"><span>📍</span><input type="text" id="dropLandmark" placeholder="e.g. Opp. Metro Pillar No. 12"></div>
+
+                <span class="input-label">City & Pincode</span>
+                <div class="input-box"><span>🏙️</span><input type="text" id="dropCityPin" placeholder="e.g. Indore - 452010"></div>
+
+
+                <!-- ITEM DESCRIPTION -->
+                <div class="section-title">📦 Package Info</div>
                 <span class="input-label">Item Description</span>
                 <div class="input-box"><span>📦</span><input type="text" id="itemDesc" placeholder="e.g. Document / Small Box"></div>
 
@@ -196,12 +222,12 @@
             }
 
             const phoneNumber = '+91' + rawPhone;
-
             const appVerifier = window.recaptchaVerifier;
+
             firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
                 .then((confirmationResult) => {
                     confirmationResultGlobal = confirmationResult;
-                    alert("कस्टमर ऐप पर OTP भेज दिया गया है!");
+                    alert("OTP sent to your registered mobile number"); // Updated clean message
                     document.getElementById('stepMobile').style.display = 'none';
                     document.getElementById('stepOtp').style.display = 'block';
                 })
@@ -236,32 +262,40 @@
         }
 
         function openBookingScreen() {
-            document.getElementById('pickupLoc').value = '';
-            document.getElementById('dropLoc').value = '';
+            document.getElementById('pickHouse').value = '';
+            document.getElementById('pickLandmark').value = '';
+            document.getElementById('pickCityPin').value = '';
+            document.getElementById('dropHouse').value = '';
+            document.getElementById('dropLandmark').value = '';
+            document.getElementById('dropCityPin').value = '';
             document.getElementById('itemDesc').value = '';
             showScreen('screenBooking');
         }
 
-        function openMapSelector() {
-            alert("🗺️ Map Picker: यहाँ से लाइव मैप पर पिन पॉइंट से लोकेशन चुनी जा सकती है।");
-        }
-
         function confirmBooking() {
-            const pickup = document.getElementById('pickupLoc').value.trim();
-            const drop = document.getElementById('dropLoc').value.trim();
+            const pickHouse = document.getElementById('pickHouse').value.trim();
+            const pickLandmark = document.getElementById('pickLandmark').value.trim();
+            const pickCityPin = document.getElementById('pickCityPin').value.trim();
+            
+            const dropHouse = document.getElementById('dropHouse').value.trim();
+            const dropLandmark = document.getElementById('dropLandmark').value.trim();
+            const dropCityPin = document.getElementById('dropCityPin').value.trim();
 
-            if(!pickup || !drop) {
-                alert('कृपया पिकअप और ड्रॉप लोकेशन दोनों दर्ज करें!');
+            if(!pickHouse || !pickLandmark || !pickCityPin || !dropHouse || !dropLandmark || !dropCityPin) {
+                alert('कृपया पिकअप और ड्रॉप दोनों के सभी विवरण (House No, Landmark, City & Pincode) भरें!');
                 return;
             }
 
-            document.getElementById('searchPick').innerText = pickup;
-            document.getElementById('searchDrop').innerText = drop;
+            const fullPickup = `${pickHouse}, ${pickLandmark}, ${pickCityPin}`;
+            const fullDrop = `${dropHouse}, ${dropLandmark}, ${dropCityPin}`;
+
+            document.getElementById('searchPick').innerText = fullPickup;
+            document.getElementById('searchDrop').innerText = fullDrop;
             showScreen('screenSearching');
 
-            // Simulate finding rider and generating pickup OTP for rider verification
+            // Simulate finding rider and generating pickup verification OTP
             setTimeout(() => {
-                alert("🎉 पार्टनर मिल गया! राइडर आपके पिकअप पर आ रहा है। पार्सल देते समय राइडर को देने के लिए आपका पिकअप OTP है: <b>4829</b>");
+                alert("🎉 Partner found! Your pickup verification OTP is: <b>4829</b>. Share this with the rider when they arrive to start navigation.");
             }, 2500);
         }
 
