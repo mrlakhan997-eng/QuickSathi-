@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sathi - Parcel Catch Game</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        body { background: #1e272e; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        #gameContainer {
+            width: 360px;
+            height: 500px;
+            background: linear-gradient(to bottom, #82ccdd, #6a89cc);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            border: 4px solid #ffffff;
+        }
+
+        /* Top Bar */
+        .score-board {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        /* Basket */
+        #basket {
+            width: 80px;
+            height: 25px;
+            background: #ff4757;
+            position: absolute;
+            bottom: 15px;
+            left: 140px;
+            border-radius: 12px;
+            border: 2px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Parcel */
+        #parcel {
+            width: 35px;
+            height: 35px;
+            font-size: 28px;
+            position: absolute;
+            top: 0px;
+            left: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Controls for Mobile */
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn-ctrl {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-ctrl:active { transform: scale(0.95); }
+
+        /* Game Over Screen */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        #startBtn {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gameContainer">
+        <div class="score-board">
+            <span>📦 Score: <span id="score">0</span></span>
+            <span>❤️ Lives: <span id="lives">3</span></span>
+        </div>
+
+        <div id="parcel">📦</div>
+        <div id="basket">🛒 Quick</div>
+
+        <div id="gameOverScreen">
+            <h2 style="color: #ff4757; font-size: 28px; margin-bottom: 5px;">Game Over!</h2>
+            <p style="font-size: 18px; margin-bottom: 10px;">Your Score: <span id="finalScore">0</span></p>
+            <button id="startBtn" onclick="restartGame()">Play Again 🔄</button>
+        </div>
+    </div>
+
+    <!-- Touch Controls for Phone -->
+    <div class="controls">
+        <button class="btn-ctrl" onclick="moveLeft()">◀ Left</button>
+        <button class="btn-ctrl" onclick="moveRight()">Right ▶</button>
+    </div>
+
+    <script>
+        const container = document.getElementById('gameContainer');
+        const basket = document.getElementById('basket');
+        const parcel = document.getElementById('parcel');
+        const scoreDisplay = document.getElementById('score');
+        const livesDisplay = document.getElementById('lives');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreDisplay = document.getElementById('finalScore');
+
+        let basketX = 140;
+        let parcelX = Math.random() * (320 - 10) + 10;
+        let parcelY = 0;
+        let speed = 4;
+        let score = 0;
+        let lives = 3;
+        let gameInterval;
+        let isGameOver = false;
+
+        // Key Controls (Keyboard Left / Right Arrow)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') moveLeft();
+            if (e.key === 'ArrowRight') moveRight();
+        });
+
+        function moveLeft() {
+            if (basketX > 10 && !isGameOver) {
+                basketX -= 25;
+                basket.style.left = basketX + 'px';
+            }
+        }
+
+        function moveRight() {
+            if (basketX < 270 && !isGameOver) {
+                basketX += 25;
+                basket.style.left = basketX + 'px';
+            }
+        }
+
+        function updateGame() {
+            if (isGameOver) return;
+
+            parcelY += speed;
+            parcel.style.top = parcelY + 'px';
+
+            // Catch check
+            if (parcelY >= 445 && parcelY <= 465) {
+                if (parcelX >= basketX - 25 && parcelX <= basketX + 75) {
+                    score += 10;
+                    scoreDisplay.innerText = score;
+                    resetParcel();
+
+                    // Increase speed slightly
+                    if (score % 50 === 0) speed += 1;
+                }
+            }
+
+            // Missed Parcel
+            if (parcelY > 480) {
+                lives -= 1;
+                livesDisplay.innerText = lives;
+                resetParcel();
+
+                if (lives <= 0) {
+                    endGame();
+                }
+            }
+        }
+
+        function resetParcel() {
+            parcelY = 0;
+            parcelX = Math.floor(Math.random() * 290) + 10;
+            parcel.style.left = parcelX + 'px';
+        }
+
+        function endGame() {
+            isGameOver = true;
+            clearInterval(gameInterval);
+            finalScoreDisplay.innerText = score;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        function restartGame() {
+            score = 0;
+            lives = 3;
+            speed = 4;
+            basketX = 140;
+            isGameOver = false;
+            scoreDisplay.innerText = score;
+            livesDisplay.innerText = lives;
+            basket.style.left = basketX + 'px';
+            gameOverScreen.style.display = 'none';
+            resetParcel();
+            gameInterval = setInterval(updateGame, 20);
+        }
+
+        // Start Game
+        gameInterval = setInterval(updateGame, 20);
+    </script>
+</body>
+</html>
