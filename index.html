@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quick Sathi - Customer App</title>
     
-    <!-- Firebase SDKs (Compatibility Version) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <!-- Leaflet CSS & JS for Free Interactive Map & Pinning -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         body, html { width: 100%; height: 100%; background-color: #f1f2f6; }
 
-        /* Full Screen Screens */
         .screen { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 100; overflow-y: auto; padding: 20px; }
         .screen.active { display: flex; flex-direction: column; }
 
-        /* Card Container */
         .card { width: 100%; max-width: 480px; margin: auto; background: white; padding: 25px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; }
 
         .input-label { font-size: 11px; font-weight: bold; color: #718093; margin-bottom: 4px; display: block; text-align: left; text-transform: uppercase; }
@@ -27,21 +29,17 @@
         .btn-main { width: 100%; background: #ff4757; color: white; border: none; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-secondary { background: #718093; margin-top: 10px; }
         
-        /* Header Top Bar */
         .top-bar { background: #ff4757; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        /* Customer Dashboard UI */
         .customer-dashboard { max-width: 500px; margin: 0 auto; padding: 20px; width: 100%; }
         .service-card { background: white; border: 1px solid #dcdde1; border-radius: 15px; padding: 25px 20px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); cursor: pointer; transition: 0.2s; }
         .service-card:hover { border-color: #ff4757; transform: translateY(-2px); }
 
-        /* Interactive Map Pinpoint Box */
-        .map-pin-box { width: 100%; height: 150px; background: #e4e7eb; border-radius: 12px; border: 2px dashed #ff4757; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 12px; cursor: pointer; position: relative; overflow: hidden; }
-        .map-pin-box:hover { background: #ffeaa7; }
+        /* Real Interactive Map Box */
+        .map-box { width: 100%; height: 220px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #dcdde1; z-index: 1; }
 
         .section-title { font-size: 13px; font-weight: bold; color: #ff4757; text-align: left; margin: 15px 0 6px 0; border-bottom: 2px solid #ff4757; padding-bottom: 3px; }
 
-        /* Side Menu Drawer */
         .side-menu { display: none; position: fixed; top: 0; left: 0; width: 260px; height: 100%; background: white; z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.15); padding: 20px; text-align: left; }
         .menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; }
         .menu-item { padding: 12px 0; border-bottom: 1px solid #f1f2f6; font-size: 15px; font-weight: 500; color: #2f3640; cursor: pointer; }
@@ -51,16 +49,16 @@
 </head>
 <body>
 
-    <!-- SIDE MENU DRAWER (HELP DESK & COMPLAIN) -->
+    <!-- SIDE MENU DRAWER -->
     <div id="menuOverlay" class="menu-overlay" onclick="toggleMenu()"></div>
     <div id="sideMenu" class="side-menu">
         <h3 style="color: #ff4757; margin-bottom: 20px;">📦 Quick Sathi Menu</h3>
-        <div class="menu-item" onclick="alert('Help Desk: For any emergency or partner issues, contact support@quicksathi.com or call 1800-QUICK-HELP')">🚨 Help Desk & Emergency</div>
-        <div class="menu-item" onclick="alert('Complain Registered: If a rider misbehaves or runs away with items, our safety team will track them using their KYC records immediately.')">⚠️ Raise Complain</div>
+        <div class="menu-item" onclick="alert('Help Desk: support@quicksathi.com | Call: 1800-QUICK-HELP')">🚨 Help Desk & Emergency</div>
+        <div class="menu-item" onclick="alert('Complain Registered: Rider safety tracking active via KYC records.')">⚠️ Raise Complain</div>
         <div class="menu-item" onclick="logoutCustomer()">🚪 Logout</div>
     </div>
 
-    <!-- STEP 1: LOGIN PAGE -->
+    <!-- LOGIN SCREEN -->
     <div id="screenLogin" class="screen active">
         <div class="card" style="margin-top: auto; margin-bottom: auto;">
             <h2 style="color: #ff4757; margin-bottom: 5px;">📦 Quick Sathi</h2>
@@ -84,12 +82,11 @@
                 <button class="btn-main" onclick="verifyCustomerOtp()">Verify OTP ✅</button>
             </div>
 
-            <!-- Visible reCAPTCHA container -->
             <div id="recaptcha-container"></div>
         </div>
     </div>
 
-    <!-- MAIN CUSTOMER DASHBOARD -->
+    <!-- DASHBOARD -->
     <div id="screenDashboard" class="screen" style="padding:0;">
         <div class="top-bar">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -109,16 +106,16 @@
             
             <div class="service-card" onclick="openBookingScreen()">
                 <h4 style="color: #ff4757; font-size: 20px; margin-bottom: 8px;">🛵 Parcel Delivery</h4>
-                <p style="color: #718093; font-size: 13px;">Send documents, parcels, or boxes across the city instantly with live tracking & verified riders.</p>
+                <p style="color: #718093; font-size: 13px;">Send documents or parcels across the city with live GPS location pinning.</p>
             </div>
         </div>
     </div>
 
-    <!-- BOOKING FORM SCREEN WITH PINPOINT MAPS & VEHICLE FARE -->
+    <!-- BOOKING SCREEN WITH LIVE GPS MAP PINNING -->
     <div id="screenBooking" class="screen" style="padding:0;">
         <div class="top-bar">
             <div>
-                <h4 style="color: white;">📍 Book Parcel Delivery</h4>
+                <h4 style="color: white;">📍 Pin Exact Location & Book</h4>
             </div>
             <div>
                 <button onclick="showScreen('screenDashboard')" style="background: white; color: #ff4757; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">Back</button>
@@ -128,19 +125,17 @@
         <div class="customer-dashboard" style="margin-top: 10px; margin-bottom: 25px;">
             <div class="card" style="max-width: 100%; text-align: left;">
                 
-                <!-- PICKUP SECTION WITH PINPOINT MAP -->
+                <!-- PICKUP MAP SECTION -->
                 <div class="section-title">📌 1st Pickup Location (Sender)</div>
-                <div class="map-pin-box" onclick="pinCurrentLocation('pickup')">
-                    <span style="font-size: 28px;">📍</span>
-                    <span style="font-size: 13px; font-weight: bold; color: #2f3640; margin-top: 5px;">Tap to Pin Exact Pickup on Map</span>
-                    <span id="pickPinStatus" style="font-size: 11px; color: #ff4757; margin-top: 2px;">(Not Pinned Yet)</span>
-                </div>
+                <div id="pickupMap" class="map-box"></div>
+                <button type="button" onclick="detectLiveGPS('pickup')" style="background:#2ed573; color:white; border:none; padding:8px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; margin-bottom:10px;">🎯 Fetch My Live GPS Location</button>
+                <p id="pickPinStatus" style="font-size: 11px; color: #718093; margin-bottom: 10px;">Status: Drag map or click live GPS to lock pin.</p>
 
                 <span class="input-label">House / Building No.</span>
-                <div class="input-box"><span>🏠</span><input type="text" id="pickHouse" placeholder="e.g. Flat 204, Sunshine Appt"></div>
+                <div class="input-box"><span>🏠</span><input type="text" id="pickHouse" placeholder="e.g. Flat 204"></div>
 
                 <span class="input-label">Landmark</span>
-                <div class="input-box"><span>📍</span><input type="text" id="pickLandmark" placeholder="e.g. Near Central Mall"></div>
+                <div class="input-box"><span>📍</span><input type="text" id="pickLandmark" placeholder="e.g. Near Temple"></div>
 
                 <span class="input-label">City & Pincode</span>
                 <div class="input-box"><span>🏙️</span><input type="text" id="pickCityPin" placeholder="e.g. Indore - 452001"></div>
@@ -149,19 +144,16 @@
                 <div class="input-box"><span>📱</span><input type="tel" id="pickMobile" placeholder="Sender phone number" maxlength="10"></div>
 
 
-                <!-- DROP SECTION WITH PINPOINT MAP -->
+                <!-- DROP MAP SECTION -->
                 <div class="section-title">📍 2nd Drop Location (Receiver)</div>
-                <div class="map-pin-box" onclick="pinCurrentLocation('drop')">
-                    <span style="font-size: 28px;">📍</span>
-                    <span style="font-size: 13px; font-weight: bold; color: #2f3640; margin-top: 5px;">Tap to Pin Exact Drop on Map</span>
-                    <span id="dropPinStatus" style="font-size: 11px; color: #ff4757; margin-top: 2px;">(Not Pinned Yet)</span>
-                </div>
+                <div id="dropMap" class="map-box"></div>
+                <p id="dropPinStatus" style="font-size: 11px; color: #718093; margin-bottom: 10px;">Status: Drag map to pin drop location.</p>
 
                 <span class="input-label">House / Building No.</span>
-                <div class="input-box"><span>🏠</span><input type="text" id="dropHouse" placeholder="e.g. Plot 15, Industrial Area"></div>
+                <div class="input-box"><span>🏠</span><input type="text" id="dropHouse" placeholder="e.g. Plot 15"></div>
 
                 <span class="input-label">Landmark</span>
-                <div class="input-box"><span>📍</span><input type="text" id="dropLandmark" placeholder="e.g. Opp. Metro Pillar 12"></div>
+                <div class="input-box"><span>📍</span><input type="text" id="dropLandmark" placeholder="e.g. Opp. Mall"></div>
 
                 <span class="input-label">City & Pincode</span>
                 <div class="input-box"><span>🏙️</span><input type="text" id="dropCityPin" placeholder="e.g. Indore - 452010"></div>
@@ -170,7 +162,7 @@
                 <div class="input-box"><span>📱</span><input type="tel" id="dropMobile" placeholder="Receiver phone number" maxlength="10"></div>
 
 
-                <!-- VEHICLE & FARE SECTION -->
+                <!-- VEHICLE & FARE -->
                 <div class="section-title">🛵 Select Vehicle & Estimate Fare</div>
                 <span class="input-label">Vehicle Type</span>
                 <div class="input-box">
@@ -196,70 +188,18 @@
         </div>
     </div>
 
-    <!-- SEARCHING RIDER SCREEN -->
+    <!-- SEARCHING RIDER -->
     <div id="screenSearching" class="screen">
         <div class="card" style="margin-top: auto; margin-bottom: auto;">
             <h3 style="color: #ff4757; margin-bottom: 10px;">🔍 Searching Nearby Partner...</h3>
-            <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Sending pinned pickup location to riders...</p>
+            <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">Sending exact GPS coordinates to rider...</p>
             
             <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; text-align: left; margin-bottom: 15px;">
-                <p style="font-size: 13px;"><b>Customer OTP (Default):</b> <span id="customerDefaultOtp" style="color: #ff4757; font-weight: bold;">7892</span></p>
+                <p style="font-size: 13px;"><b>Customer OTP (Default):</b> <span style="color: #ff4757; font-weight: bold;">7892</span></p>
                 <p style="font-size: 11px; color: #718093; margin-top: 3px;">(Share with rider at pickup)</p>
             </div>
 
             <button class="btn-main btn-secondary" onclick="showScreen('screenDashboard')">Cancel Booking</button>
-        </div>
-    </div>
-
-    <!-- RIDER ASSIGNED & LIVE TRACKING -->
-    <div id="screenLiveOrder" class="screen">
-        <div class="card" style="margin-top: auto; margin-bottom: auto; text-align: left;">
-            <h3 style="color: #2ed573; margin-bottom: 15px; text-align: center;">🎉 Rider Assigned!</h3>
-            
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
-                <div style="width: 50px; height: 50px; background: #dfe4ea; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px;">👤</div>
-                <div>
-                    <h4 id="riderName" style="color: #2f3640;">Rahul Verma</h4>
-                    <p id="riderPhone" style="font-size: 13px; color: #718093;">📱 98260XXXXX</p>
-                    <p style="font-size: 11px; color: #2ed573; font-weight: bold;">Verified KYC Partner ✅</p>
-                </div>
-            </div>
-
-            <div style="margin-bottom: 15px; text-align: center;">
-                <a id="callRiderBtn" href="tel:9826000000" style="display: inline-block; background: #2ed573; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">📞 Call Rider</a>
-            </div>
-
-            <div style="background: #fff3cd; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; color: #856404;">
-                <b>Pickup OTP:</b> <span id="activePickupOtp">7892</span> <br>
-                <b>Drop OTP (Receiver):</b> <span id="activeDropOtp">5614</span>
-            </div>
-
-            <button class="btn-main" onclick="simulateDeliveryComplete()" style="background: #2ed573;">Simulate Delivery Completed ✅</button>
-        </div>
-    </div>
-
-    <!-- FEEDBACK SCREEN -->
-    <div id="screenFeedback" class="screen">
-        <div class="card" style="margin-top: auto; margin-bottom: auto;">
-            <h3 style="color: #ff4757; margin-bottom: 5px;">⭐ Delivery Successful!</h3>
-            <p style="color: #718093; font-size: 13px; margin-bottom: 20px;">How was your experience with the rider?</p>
-
-            <span class="input-label">Rate Driver / Rider (1 to 5 Stars)</span>
-            <div class="input-box">
-                <span>⭐</span>
-                <select id="riderRating">
-                    <option value="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
-                    <option value="4">⭐⭐⭐⭐ (4 - Good)</option>
-                    <option value="3">⭐⭐⭐ (3 - Average)</option>
-                    <option value="2">⭐⭐ (2 - Poor)</option>
-                    <option value="1">⭐ (1 - Very Bad)</option>
-                </select>
-            </div>
-
-            <span class="input-label">Feedback / Comments</span>
-            <div class="input-box"><span>📝</span><input type="text" id="riderFeedbackText" placeholder="e.g. Polite driver, timely delivery"></div>
-
-            <button class="btn-main" onclick="submitFeedback()">Submit Feedback 📤</button>
         </div>
     </div>
 
@@ -293,12 +233,17 @@
         });
 
         let confirmationResultGlobal = null;
-        let pickupPinned = false;
-        let dropPinned = false;
+        let pMap, dMap, pMarker, dMarker;
+        let pickCoords = { lat: 22.7196, lng: 75.8577 }; // Default Indore
+        let dropCoords = { lat: 22.7533, lng: 75.8937 };
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
+
+            if(screenId === 'screenBooking') {
+                setTimeout(() => { initMaps(); }, 300);
+            }
         }
 
         function toggleMenu() {
@@ -321,9 +266,7 @@
             }
 
             const phoneNumber = '+91' + rawPhone;
-            const appVerifier = window.recaptchaVerifier;
-
-            firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+            firebase.auth().signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
                 .then((confirmationResult) => {
                     confirmationResultGlobal = confirmationResult;
                     alert("OTP sent to your registered mobile number");
@@ -361,10 +304,6 @@
         }
 
         function openBookingScreen() {
-            pickupPinned = false;
-            dropPinned = false;
-            document.getElementById('pickPinStatus').innerText = "(Not Pinned Yet)";
-            document.getElementById('dropPinStatus').innerText = "(Not Pinned Yet)";
             document.getElementById('pickHouse').value = '';
             document.getElementById('pickLandmark').value = '';
             document.getElementById('pickCityPin').value = '';
@@ -377,18 +316,62 @@
             showScreen('screenBooking');
         }
 
-        // Pinpoint Map Functionality
-        function pinCurrentLocation(type) {
-            if(type === 'pickup') {
-                pickupPinned = true;
-                document.getElementById('pickPinStatus').innerText = "✅ Exact Location Pinned (Lat: 22.7196, Lng: 75.8577)";
-                document.getElementById('pickPinStatus').style.color = '#2ed573';
-                alert("📍 Pickup location pinned successfully on map!");
+        // Initialize Interactive Leaflet Maps with Draggable Pins
+        function initMaps() {
+            if(!pMap) {
+                pMap = L.map('pickupMap').setView([pickCoords.lat, pickCoords.lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(pMap);
+                pMarker = L.marker([pickCoords.lat, pickCoords.lng], { draggable: true }).addTo(pMap);
+                
+                pMarker.on('dragend', function(e) {
+                    const pos = pMarker.getLatLng();
+                    pickCoords.lat = pos.lat;
+                    pickCoords.lng = pos.lng;
+                    document.getElementById('pickPinStatus').innerText = `✅ Pinned (Lat: ${pos.lat.toFixed(4)}, Lng: ${pos.lng.toFixed(4)})`;
+                    document.getElementById('pickPinStatus').style.color = '#2ed573';
+                });
             } else {
-                dropPinned = true;
-                document.getElementById('dropPinStatus').innerText = "✅ Exact Location Pinned (Lat: 22.7533, Lng: 75.8937)";
-                document.getElementById('dropPinStatus').style.color = '#2ed573';
-                alert("📍 Drop location pinned successfully on map!");
+                pMap.invalidateSize();
+            }
+
+            if(!dMap) {
+                dMap = L.map('dropMap').setView([dropCoords.lat, dropCoords.lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(dMap);
+                dMarker = L.marker([dropCoords.lat, dropCoords.lng], { draggable: true }).addTo(dMap);
+
+                dMarker.on('dragend', function(e) {
+                    const pos = dMarker.getLatLng();
+                    dropCoords.lat = pos.lat;
+                    dropCoords.lng = pos.lng;
+                    document.getElementById('dropPinStatus').innerText = `✅ Pinned (Lat: ${pos.lat.toFixed(4)}, Lng: ${pos.lng.toFixed(4)})`;
+                    document.getElementById('dropPinStatus').style.color = '#2ed573';
+                });
+            } else {
+                dMap.invalidateSize();
+            }
+        }
+
+        // Fetch Real Live GPS Location from Device
+function detectLiveGPS(type) {
+            if (navigator.geolocation) {
+                alert("📍 आपकी लाइव GPS लोकेशन प्राप्त की जा रही है, कृपया अनुमति (Allow) दें...");
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    if(type === 'pickup') {
+                        pickCoords.lat = lat;
+                        pickCoords.lng = lng;
+                        pMap.setView([lat, lng], 16);
+                        pMarker.setLatLng([lat, lng]);
+                        document.getElementById('pickPinStatus').innerText = `✅ Live GPS Locked! (Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)})`;
+                        document.getElementById('pickPinStatus').style.color = '#2ed573';
+                    }
+                }, (error) => {
+                    alert("GPS लोकेशन नहीं मिल पाई। कृपया ब्राउज़र लोकेशन परमिशन चेक करें।");
+                }, { enableHighAccuracy: true });
+            } else {
+                alert("आपका ब्राउज़र Geolocation सपोर्ट नहीं करता है।");
             }
         }
 
@@ -402,16 +385,10 @@
             else if(vehicle === 'mini') ratePerKm = 50;
             else if(vehicle === 'truck') ratePerKm = 250;
 
-            const total = ratePerKm * km;
-            document.getElementById('displayFare').innerText = total;
+            document.getElementById('displayFare').innerText = ratePerKm * km;
         }
 
         function confirmBooking() {
-            if(!pickupPinned || !dropPinned) {
-                alert('कृपया पहले मैप पर Pickup और Drop दोनों लोकेशन को Pin जरूर करें!');
-                return;
-            }
-
             const pickHouse = document.getElementById('pickHouse').value.trim();
             const pickLandmark = document.getElementById('pickLandmark').value.trim();
             const pickCityPin = document.getElementById('pickCityPin').value.trim();
@@ -423,34 +400,21 @@
             const dropMobile = document.getElementById('dropMobile').value.trim();
 
             if(!pickHouse || !pickLandmark || !pickCityPin || !pickMobile || !dropHouse || !dropLandmark || !dropCityPin || !dropMobile) {
-                alert('कृपया पिकअप और ड्रॉप दोनों के सभी विवरण (House No, Landmark, City/Pin, Mobile No) भरें!');
+                alert('कृपया पिकअप और ड्रॉप दोनों के सभी विवरण भरें!');
                 return;
             }
 
             showScreen('screenSearching');
-
             setTimeout(() => {
-                showScreen('screenLiveOrder');
+                alert("🎉 पार्टनर मिल गया! आपकी सटीक GPS लोकेशन और पिन राइडर को भेज दी गई है।");
+                showScreen('screenDashboard');
             }, 3000);
-        }
-
-        function simulateDeliveryComplete() {
-            showScreen('screenFeedback');
-        }
-
-        function submitFeedback() {
-            alert("🎉 धन्यवाद! आपकी रेटिंग और फीडबैक सफलतापर्वक दर्ज हो गया है।");
-            showScreen('screenDashboard');
         }
 
         function logoutCustomer() {
             if(confirm("क्या आप वाकई लॉगआउट करना चाहते हैं?")) {
                 firebase.auth().signOut().then(() => {
-                    alert("सफलतापूर्वक लॉगआउट हो गए हैं!");
                     showScreen('screenLogin');
-                }).catch((error) => {
-                    console.error("Logout Error: ", error);
-                    alert("लॉगआउट करने में समस्या आई।");
                 });
             }
         }
