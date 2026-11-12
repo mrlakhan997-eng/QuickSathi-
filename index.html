@@ -3,239 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quick Sathi - Parcel Catch Game</title>
+    <title>Heavy Driver - Indore Traffic Dodge</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; user-select: none; }
-        body { background: #1e272e; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        
-        #gameContainer {
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; user-select: none; }
+        body { background: #121212; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+
+        #gameCard {
             width: 360px;
-            height: 500px;
-            background: linear-gradient(to bottom, #82ccdd, #6a89cc);
-            border-radius: 15px;
+            height: 580px;
+            background: #222;
+            border-radius: 16px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            border: 4px solid #ffffff;
+            border: 4px solid #ff4757;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
 
-        /* Top Bar */
-        .score-board {
+        /* Top HUD */
+        .hud {
             position: absolute;
             top: 10px;
-            left: 15px;
-            right: 15px;
+            left: 12px;
+            right: 12px;
             display: flex;
             justify-content: space-between;
-            font-size: 16px;
-            font-weight: bold;
-            color: #ffffff;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px 15px;
-            border-radius: 20px;
-        }
-
-        /* Basket */
-        #basket {
-            width: 80px;
-            height: 25px;
-            background: #ff4757;
-            position: absolute;
-            bottom: 15px;
-            left: 140px;
-            border-radius: 12px;
-            border: 2px solid white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            display: flex;
             align-items: center;
-            justify-content: center;
-            color: white;
+            background: rgba(0,0,0,0.65);
+            padding: 8px 14px;
+            border-radius: 20px;
+            z-index: 10;
+            color: #fff;
             font-size: 14px;
             font-weight: bold;
         }
 
-        /* Parcel */
-        #parcel {
-            width: 35px;
-            height: 35px;
-            font-size: 28px;
+        /* Moving Road */
+        .road {
+            width: 100%;
+            height: 100%;
+            background: #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lane-line {
             position: absolute;
-            top: 0px;
-            left: 160px;
+            width: 6px;
+            height: 40px;
+            background: #fff;
+            left: 33.33%;
+            border-radius: 3px;
+            opacity: 0.7;
+        }
+        .lane-line-2 { left: 66.66%; }
+
+        /* Player Vehicle */
+        #player {
+            width: 50px;
+            height: 70px;
+            position: absolute;
+            bottom: 20px;
+            left: 155px;
+            font-size: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: left 0.1s ease-out;
+            z-index: 5;
         }
 
-        /* Controls for Mobile */
-        .controls {
-            margin-top: 15px;
+        /* Obstacles */
+        .obstacle {
+            width: 55px;
+            height: 70px;
+            position: absolute;
+            font-size: 40px;
             display: flex;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            z-index: 4;
+        }
+
+        /* Mobile Controls */
+        .controls-panel {
+            margin-top: 12px;
+            display: flex;
+            gap: 15px;
         }
 
         .btn-ctrl {
             background: #ff4757;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 20px;
+            padding: 14px 35px;
+            font-size: 22px;
             font-weight: bold;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
         }
 
         .btn-ctrl:active { transform: scale(0.95); }
 
-        /* Game Over Screen */
-        #gameOverScreen {
-            display: none;
+        /* Overlay Screens */
+        .overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            color: white;
+            background: rgba(0, 0, 0, 0.88);
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 20;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
         }
 
-        #startBtn {
+        .btn-play {
             background: #2ed573;
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 14px 36px;
+            font-size: 18px;
             font-weight: bold;
             border-radius: 25px;
-            margin-top: 15px;
+            margin-top: 18px;
             cursor: pointer;
+            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
         }
     </style>
 </head>
 <body>
 
-    <div id="gameContainer">
-        <div class="score-board">
-            <span>📦 Score: <span id="score">0</span></span>
-            <span>❤️ Lives: <span id="lives">3</span></span>
+    <div id="gameCard">
+        <!-- HUD -->
+        <div class="hud">
+            <span>🏁 Score: <span id="scoreText">0</span></span>
+            <span>🏆 High: <span id="highScoreText">0</span></span>
         </div>
 
-        <div id="parcel">📦</div>
-        <div id="basket">🛒 Quick</div>
+        <!-- Road Track -->
+        <div class="road" id="road">
+            <div id="player">🛵</div>
+        </div>
 
-        <div id="gameOverScreen">
-            <h2 style="color: #ff4757; font-size: 28px; margin-bottom: 5px;">Game Over!</h2>
-            <p style="font-size: 18px; margin-bottom: 10px;">Your Score: <span id="finalScore">0</span></p>
-            <button id="startBtn" onclick="restartGame()">Play Again 🔄</button>
+        <!-- Start Screen -->
+        <div id="startScreen" class="overlay">
+            <h1 style="color: #ff4757; font-size: 32px; margin-bottom: 5px;">HEAVY DRIVER</h1>
+            <p style="color: #ccc; font-size: 14px; margin-bottom: 15px;">Indore Traffic Dodge</p>
+            <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">गाड़ियों और रुकावटों से बाइक बचाएं!</p>
+            <button class="btn-play" onclick="startGame()">Start Race 🚀</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="overlay" style="display: none;">
+            <h2 style="color: #ff4757; font-size: 30px; margin-bottom: 8px;">Accident Ho Gaya! 💥</h2>
+            <p style="font-size: 16px; margin-bottom: 6px;">Score: <span id="finalScore">0</span></p>
+            <p style="font-size: 13px; color: #eccc68; margin-bottom: 15px;" id="commentText">अरे भैया, थोड़ा संभल के!</p>
+            <button class="btn-play" onclick="startGame()">Try Again 🔄</button>
         </div>
     </div>
 
-    <!-- Touch Controls for Phone -->
-    <div class="controls">
-        <button class="btn-ctrl" onclick="moveLeft()">◀ Left</button>
-        <button class="btn-ctrl" onclick="moveRight()">Right ▶</button>
+    <!-- Phone Controls -->
+    <div class="controls-panel">
+        <button class="btn-ctrl" onclick="moveLeft()">◀</button>
+        <button class="btn-ctrl" onclick="moveRight()">▶</button>
     </div>
 
     <script>
-        const container = document.getElementById('gameContainer');
-        const basket = document.getElementById('basket');
-        const parcel = document.getElementById('parcel');
-        const scoreDisplay = document.getElementById('score');
-        const livesDisplay = document.getElementById('lives');
+        const road = document.getElementById('road');
+        const player = document.getElementById('player');
+        const scoreText = document.getElementById('scoreText');
+        const highScoreText = document.getElementById('highScoreText');
+        const startScreen = document.getElementById('startScreen');
         const gameOverScreen = document.getElementById('gameOverScreen');
-        const finalScoreDisplay = document.getElementById('finalScore');
+        const finalScoreText = document.getElementById('finalScore');
+        const commentText = document.getElementById('commentText');
 
-        let basketX = 140;
-        let parcelX = Math.random() * (320 - 10) + 10;
-        let parcelY = 0;
-        let speed = 4;
+        const lanes = [40, 152, 264]; // Left, Middle, Right Lane X-positions
+        const obstaclesList = ['🛺', '🚚', '🚗', '🐄', '🚧'];
+        const comments = [
+            "अरे भैया, थोड़ा संभल के चलाओ!",
+            "पोहा-जिलेबी खाने की जल्दी थी क्या?",
+            "हेवी ड्राइवर निकले आप तो!",
+            "रीगल चौराहे पर चालान कट गया!"
+        ];
+
+        let currentLane = 1;
         let score = 0;
-        let lives = 3;
-        let gameInterval;
-        let isGameOver = false;
+        let highScore = localStorage.getItem('heavy_driver_high') || 0;
+        let gameActive = false;
+        let gameSpeed = 5;
+        let activeObstacles = [];
+        let roadLines = [];
+        let animationFrameId;
+        let spawnTimer = 0;
 
-        // Key Controls (Keyboard Left / Right Arrow)
+        highScoreText.innerText = highScore;
+
+        // Initialize Road Stripe Markings
+        for (let i = 0; i < 10; i++) {
+            let line1 = createLine(115, i * 70);
+            let line2 = createLine(235, i * 70);
+            roadLines.push(line1, line2);
+        }
+
+        function createLine(left, top) {
+            let l = document.createElement('div');
+            l.className = 'lane-line';
+            l.style.left = left + 'px';
+            l.style.top = top + 'px';
+            road.appendChild(l);
+            return l;
+        }
+
+        // Keyboard Movement
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') moveLeft();
-            if (e.key === 'ArrowRight') moveRight();
+            if (!gameActive) return;
+            if (e.key === 'ArrowLeft' || e.key === 'a') moveLeft();
+            if (e.key === 'ArrowRight' || e.key === 'd') moveRight();
         });
 
         function moveLeft() {
-            if (basketX > 10 && !isGameOver) {
-                basketX -= 25;
-                basket.style.left = basketX + 'px';
+            if (currentLane > 0 && gameActive) {
+                currentLane--;
+                player.style.left = lanes[currentLane] + 'px';
             }
         }
 
         function moveRight() {
-            if (basketX < 270 && !isGameOver) {
-                basketX += 25;
-                basket.style.left = basketX + 'px';
+            if (currentLane < 2 && gameActive) {
+                currentLane++;
+                player.style.left = lanes[currentLane] + 'px';
             }
         }
 
-        function updateGame() {
-            if (isGameOver) return;
+        function startGame() {
+            // Reset States
+            activeObstacles.forEach(obs => obs.el.remove());
+            activeObstacles = [];
+            score = 0;
+            gameSpeed = 5;
+            currentLane = 1;
+            player.style.left = lanes[currentLane] + 'px';
+            scoreText.innerText = '0';
+            
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gameActive = true;
 
-            parcelY += speed;
-            parcel.style.top = parcelY + 'px';
+            cancelAnimationFrame(animationFrameId);
+            gameLoop();
+        }
 
-            // Catch check
-            if (parcelY >= 445 && parcelY <= 465) {
-                if (parcelX >= basketX - 25 && parcelX <= basketX + 75) {
-                    score += 10;
-                    scoreDisplay.innerText = score;
-                    resetParcel();
+        function gameLoop() {
+            if (!gameActive) return;
 
-                    // Increase speed slightly
-                    if (score % 50 === 0) speed += 1;
-                }
+            // Move Road Markings
+            roadLines.forEach(l => {
+                let top = parseFloat(l.style.top) + gameSpeed;
+                if (top > 580) top = -60;
+                l.style.top = top + 'px';
+            });
+
+            // Spawn Obstacles
+            spawnTimer++;
+            if (spawnTimer > Math.max(25, 60 - Math.floor(score / 50))) {
+                spawnObstacle();
+                spawnTimer = 0;
             }
 
-            // Missed Parcel
-            if (parcelY > 480) {
-                lives -= 1;
-                livesDisplay.innerText = lives;
-                resetParcel();
+            // Move & Check Collision
+            for (let i = activeObstacles.length - 1; i >= 0; i--) {
+                let obs = activeObstacles[i];
+                obs.y += gameSpeed;
+                obs.el.style.top = obs.y + 'px';
 
-                if (lives <= 0) {
+                // Check Collision with Player
+                if (obs.y > 470 && obs.y < 550 && obs.lane === currentLane) {
                     endGame();
+                    return;
+                }
+
+                // Remove off-screen obstacles
+                if (obs.y > 600) {
+                    obs.el.remove();
+                    activeObstacles.splice(i, 1);
+                    score += 10;
+                    scoreText.innerText = score;
+
+                    if (score % 60 === 0 && gameSpeed < 14) {
+                        gameSpeed += 0.8;
+                    }
                 }
             }
+
+            animationFrameId = requestAnimationFrame(gameLoop);
         }
 
-        function resetParcel() {
-            parcelY = 0;
-            parcelX = Math.floor(Math.random() * 290) + 10;
-            parcel.style.left = parcelX + 'px';
+        function spawnObstacle() {
+            let laneIndex = Math.floor(Math.random() * 3);
+            let type = obstaclesList[Math.floor(Math.random() * obstaclesList.length)];
+            
+            let obsEl = document.createElement('div');
+            obsEl.className = 'obstacle';
+            obsEl.innerText = type;
+            obsEl.style.left = (lanes[laneIndex] - 2) + 'px';
+            obsEl.style.top = '-80px';
+            road.appendChild(obsEl);
+
+            activeObstacles.push({ el: obsEl, y: -80, lane: laneIndex });
         }
 
         function endGame() {
-            isGameOver = true;
-            clearInterval(gameInterval);
-            finalScoreDisplay.innerText = score;
+            gameActive = false;
+            cancelAnimationFrame(animationFrameId);
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('heavy_driver_high', highScore);
+                highScoreText.innerText = highScore;
+            }
+
+            finalScoreText.innerText = score;
+            commentText.innerText = comments[Math.floor(Math.random() * comments.length)];
             gameOverScreen.style.display = 'flex';
         }
-
-        function restartGame() {
-            score = 0;
-            lives = 3;
-            speed = 4;
-            basketX = 140;
-            isGameOver = false;
-            scoreDisplay.innerText = score;
-            livesDisplay.innerText = lives;
-            basket.style.left = basketX + 'px';
-            gameOverScreen.style.display = 'none';
-            resetParcel();
-            gameInterval = setInterval(updateGame, 20);
-        }
-
-        // Start Game
-        gameInterval = setInterval(updateGame, 20);
     </script>
 </body>
 </html>
